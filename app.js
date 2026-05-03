@@ -376,6 +376,11 @@ function apiText(text = "") {
   return restoreMaskedWords(stripHtml(text));
 }
 
+function cleanBoardText(text = "", fallback = "") {
+  const value = apiText(text).replace(/[?？]{3,}/g, "").trim();
+  return value || fallback;
+}
+
 function formatDate(seconds) {
   if (!seconds) return "未知";
   const date = new Date(seconds * 1000);
@@ -914,12 +919,13 @@ function createWorkCommentCard(comment, nested = false) {
 
 function normalizeBoard(board, index) {
   const meta = boardMeta[String(board.id)] || {};
+  const fallbackDesc = board.has_selection ? "保留历史痕迹与精选内容的板块入口" : "把还能读取的社区内容重新组织成移动端入口";
   return {
     id: String(board.id),
-    name: meta.name || board.name,
-    desc: meta.desc || board.description || (board.has_selection ? "?????????" : "?????????"),
+    name: cleanBoardText(meta.name || board.name, `板块 ${board.id}`),
+    desc: cleanBoardText(meta.desc || board.description, fallbackDesc),
     icon: circleIconMap[String(board.id)] || board.icon_url || ASSETS.prefecture,
-    count: board.n_posts ? `${compactNumber(board.n_posts)} ??` : board.is_hot ? "??" : "??",
+    count: board.n_posts ? `${compactNumber(board.n_posts)} 帖` : board.is_hot ? "热门" : board.has_selection ? "精选" : "更新中",
     site: meta.site || `https://shequ.codemao.cn/community?board_id=${board.id}`,
     tone: index % 2 ? "alt" : "main"
   };
