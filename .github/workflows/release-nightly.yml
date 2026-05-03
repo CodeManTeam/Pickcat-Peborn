@@ -1,0 +1,83 @@
+name: release-nightly
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-nightly
+  cancel-in-progress: true
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check app bundle
+        run: pnpm run check
+
+      - name: Build Windows package
+        run: pnpm run dist:win
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pickcat-reborn-windows
+          path: release/windows/*
+          if-no-files-found: error
+
+      - name: Publish nightly release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = "nightly"
+          $title = "Nightly Build"
+          $notes = @"
+          Auto-built from commit $env:GITHUB_SHA
+          Branch: $env:GITHUB_REF_NAME
+          Workflow: $env:GITHUB_WORKFLOW
+          "@
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f $tag $env:GITHUB_SHA
+          git push origin "refs/tags/$tag" --force
+
+          $files = Get-ChildItem "release/windows" -File | ForEach-Object { $_.FullName }
+          if (-not $files) {
+            throw "No files found in release/windows"
+          }
+
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag $files --title $title --notes $notes --prerelease
+          } else {
+            gh release edit $tag --title $title --notes $notes --prerelease
+            gh release upload $tag $files --clobber
+          }

@@ -1,7 +1,9 @@
 package cn.pickcat.reborn;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
@@ -13,6 +15,8 @@ import android.webkit.WebViewClient;
 import android.widget.Toast;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,14 +38,18 @@ public class MainActivity extends Activity {
     private WebView webView;
     private View customView;
     private WebChromeClient.CustomViewCallback customViewCallback;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        preferences = getSharedPreferences("pickcat", MODE_PRIVATE);
+        configureSystemBars();
         server = new LocalServer(this);
         server.start();
 
         webView = new WebView(this);
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -83,6 +91,27 @@ public class MainActivity extends Activity {
         });
         setContentView(webView);
         webView.loadUrl("http://127.0.0.1:" + server.port() + "/");
+    }
+
+    private void configureSystemBars() {
+        Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.setStatusBarColor(Color.WHITE);
+            window.setNavigationBarColor(Color.WHITE);
+        }
+        int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        window.getDecorView().setSystemUiVisibility(flags);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            WindowManager.LayoutParams attrs = window.getAttributes();
+            attrs.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            window.setAttributes(attrs);
+        }
     }
 
     @Override
@@ -158,6 +187,21 @@ public class MainActivity extends Activity {
         public void toast(String text) {
             runOnUiThread(() -> Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show());
         }
+
+        @JavascriptInterface
+        public void saveLogin(String payload) {
+            preferences.edit().putString("login_payload", payload == null ? "" : payload).apply();
+        }
+
+        @JavascriptInterface
+        public String readLogin() {
+            return preferences.getString("login_payload", "");
+        }
+
+        @JavascriptInterface
+        public void clearLogin() {
+            preferences.edit().remove("login_payload").apply();
+        }
     }
 
     private static final class LocalServer implements Runnable {
@@ -168,9 +212,17 @@ public class MainActivity extends Activity {
         LocalServer(Activity activity) {
             this.activity = activity;
             try {
-                serverSocket = new ServerSocket(0, 50, InetAddress.getByName("127.0.0.1"));
+                serverSocket = openServerSocket();
             } catch (IOException error) {
                 throw new IllegalStateException(error);
+            }
+        }
+
+        private static ServerSocket openServerSocket() throws IOException {
+            try {
+                return new ServerSocket(4173, 50, InetAddress.getByName("127.0.0.1"));
+            } catch (IOException occupied) {
+                return new ServerSocket(0, 50, InetAddress.getByName("127.0.0.1"));
             }
         }
 

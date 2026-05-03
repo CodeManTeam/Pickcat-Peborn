@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 
 # Build outputs
 dist/
@@ -10,13 +11,23 @@ deliverables/
 
 # Android local files
 android-sdk/
+.gradle/
 android/.gradle/
+android/.idea/
+android/.cxx/
+android/captures/
 android/build/
 android/app/build/
 android/local.properties
+*.jks
+*.keystore
 
 # Logs
 *.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 crash_log.txt
 full_log.txt
 server.log
@@ -27,6 +38,11 @@ __pycache__/
 *.pyc
 *.pyo
 *.whl
+
+# Cache / coverage
+.cache/
+coverage/
+out/
 
 # Reverse engineering temp files
 *.i64
@@ -45,3 +61,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# IDE files
+.idea/
+.vscode/
+*.tsbuildinfo

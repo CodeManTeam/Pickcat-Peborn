@@ -20,22 +20,19 @@
             <img class="top-action-img back-img" src="public/assets/pickcat/imoji_back.png" alt="" />
           </button>
           <h1 class="brand" data-title><img src="public/assets/pickcat/ic_home_logo.png" alt="PICKCAT" /></h1>
+          <nav class="tabs topbar-tabs" aria-label="首页分类" data-home-tabs>
+            <button class="tab active" type="button" data-feed-tab="recommend">推荐</button>
+            <button class="tab" type="button" data-feed-tab="discover">发现</button>
+            <button class="tab" type="button" data-feed-tab="following">关注</button>
+          </nav>
           <div class="top-actions">
             <button class="icon-btn" type="button" data-search aria-label="搜索">
               <img class="top-action-img" src="public/assets/pickcat/ic_search.png" alt="" />
-            </button>
-            <button class="icon-btn" type="button" aria-label="菜单">
-              <img class="top-action-img menu-img" src="public/assets/pickcat/ic_more_mine_black.png" alt="" />
             </button>
           </div>
         </header>
 
         <section class="view active" id="home-view" data-view="home">
-          <nav class="tabs" aria-label="首页分类">
-            <button class="tab active" type="button" data-feed-tab="recommend">推荐</button>
-            <button class="tab" type="button" data-feed-tab="discover">发现</button>
-            <button class="tab" type="button" data-feed-tab="following">关注</button>
-          </nav>
           <div class="feed" data-feed></div>
           <div class="feed-sentinel" data-feed-sentinel>继续滑动加载社区内容</div>
         </section>
@@ -85,10 +82,6 @@
             <div class="profile-main">
               <h2>未登录</h2>
               <p>Pickcat 复刻计划 · 前端多端原型</p>
-              <div class="profile-actions">
-                <a class="secondary-link" href="pickcat-story.html" target="_blank" rel="noreferrer">项目文章</a>
-                <a class="secondary-link" href="pickcat-story.html#prototype-gallery" target="_blank" rel="noreferrer">宣传图集</a>
-              </div>
             </div>
           </section>
           <nav class="profile-tabs">
@@ -118,6 +111,10 @@
             <label class="login-field">
               <img src="public/assets/pickcat/icon_login_password.png" alt="" />
               <input name="password" type="password" autocomplete="current-password" placeholder="密码" required />
+            </label>
+            <label class="remember-row">
+              <input name="remember" type="checkbox" checked />
+              <span>保存账号和登录状态</span>
             </label>
             <button class="primary-btn" type="submit">登录</button>
             <div class="api-note" data-login-status>登录接口来自 BCMAPI：tiger/v3/web/accounts/login</div>

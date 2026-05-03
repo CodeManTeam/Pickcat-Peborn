@@ -105,7 +105,7 @@ const state = {
   posts: [],
   allBoards: [],
   boards: [],
-  boardOffsets: {},
+  boardPages: {},
   boardExhausted: {},
   feedLoading: false,
   feedDone: false,
@@ -123,10 +123,11 @@ const state = {
   pendingPostReplyId: "",
   pendingWorkCommentId: "",
   activeCircleBoardId: "",
-  circleBoardOffset: 0,
+  circleBoardPage: 1,
   circleBoardDone: false,
   circleBoardLoading: false,
   circleBoardPosts: [],
+  circleObserver: null,
   followingUsers: [],
   followingPosts: [],
   followingLoaded: false,
@@ -140,17 +141,71 @@ const state = {
   mineFollowingUsers: [],
   user: JSON.parse(localStorage.getItem("pickcat:user") || "null"),
   auth: JSON.parse(localStorage.getItem("pickcat:auth") || "null"),
+  savedLogin: JSON.parse(localStorage.getItem("pickcat:login") || "null"),
+  lastScrollY: 0,
+  topbarCollapsed: false,
   history: ["Pickcat", "新社区初代体验团", "源码精灵"]
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-function runTransition(update) {
-  if (typeof document.startViewTransition === "function") {
-    document.startViewTransition(() => update());
-    return;
+function saveSessionToStorage(remember = true) {
+  if (!state.user || !state.auth) return;
+  if (remember) {
+    localStorage.setItem("pickcat:user", JSON.stringify(state.user));
+    localStorage.setItem("pickcat:auth", JSON.stringify(state.auth));
+  } else {
+    localStorage.removeItem("pickcat:user");
+    localStorage.removeItem("pickcat:auth");
   }
+  const payload = {
+    user: state.user,
+    auth: state.auth,
+    login: state.savedLogin,
+    savedAt: Date.now()
+  };
+  if (remember && window.PickcatAndroid?.saveLogin) {
+    window.PickcatAndroid.saveLogin(JSON.stringify(payload));
+  }
+}
+
+function clearSavedSession() {
+  localStorage.removeItem("pickcat:user");
+  localStorage.removeItem("pickcat:auth");
+  if (window.PickcatAndroid?.clearLogin) {
+    window.PickcatAndroid.clearLogin();
+  }
+}
+
+function hydrateNativeSession() {
+  if (state.auth?.token || !window.PickcatAndroid?.readLogin) return;
+  try {
+    const text = window.PickcatAndroid.readLogin();
+    if (!text) return;
+    const payload = JSON.parse(text);
+    if (!payload?.auth || !payload?.user) return;
+    state.user = payload.user;
+    state.auth = payload.auth;
+    state.savedLogin = payload.login || state.savedLogin;
+    localStorage.setItem("pickcat:user", JSON.stringify(state.user));
+    localStorage.setItem("pickcat:auth", JSON.stringify(state.auth));
+    if (state.savedLogin) localStorage.setItem("pickcat:login", JSON.stringify(state.savedLogin));
+  } catch {
+    clearSavedSession();
+  }
+}
+
+function hydrateLoginForm() {
+  const form = $("[data-login-form]");
+  if (!form) return;
+  const identity = form.elements.identity;
+  const remember = form.elements.remember;
+  if (identity && state.savedLogin?.identity) identity.value = state.savedLogin.identity;
+  if (remember) remember.checked = state.savedLogin?.remember !== false;
+}
+
+function runTransition(update) {
   update();
 }
 
@@ -166,23 +221,33 @@ async function request(base, path, { method = "GET", params, body, auth = false,
   Object.entries(params || {}).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, value);
   });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
 
-  const response = await fetch(url, {
-    method,
-    headers: {
-      "content-type": "application/json",
-      ...(auth ? authHeaders() : {}),
-      ...headers
-    },
-    body: body ? JSON.stringify(body) : undefined
-  });
-
-  const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
-  if (!response.ok) {
-    throw new Error(data?.error_message || data?.msg || `${path} ${response.status}`);
+  let response;
+  try {
+    response = await fetch(url, {
+      method,
+      signal: controller.signal,
+      headers: {
+        "content-type": "application/json",
+        ...(auth ? authHeaders() : {}),
+        ...headers
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+    if (!response.ok) {
+      throw new Error(data?.error_message || data?.msg || `${path} ${response.status}`);
+    }
+    return raw ? { data, response } : data;
+  } catch (error) {
+    if (error.name === "AbortError") throw new Error(`${path} 请求超时`);
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-  return raw ? { data, response } : data;
 }
 
 const api = {
@@ -213,8 +278,8 @@ const api = {
       params: { query_type: queryType, offset: 0, limit: 10 }
     }),
   boards: () => request(apiConfig.codemao, "/web/forums/boards/simples/all"),
-  boardPosts: (boardId, offset = 0, limit = 10) =>
-    request(apiConfig.codemao, `/web/forums/boards/${boardId}/posts`, { params: { offset, limit } }),
+  boardPosts: (boardId, page = 1, limit = 10) =>
+    request(apiConfig.codemao, `/web/forums/boards/${boardId}/posts`, { params: { page, limit } }),
   searchPosts: (title, limit = 20) =>
     request(apiConfig.codemao, "/web/forums/posts/search", { params: { title, page: 1, limit } }),
   postDetail: (id) => request(apiConfig.codemao, `/web/forums/posts/${id}/details`),
@@ -265,8 +330,8 @@ const api = {
     request(apiConfig.codemao, "/nemo/v2/user/dynamic/info", { params: { user_id: userId } }),
   userBusinessTotal: (userId) =>
     request(apiConfig.codemao, "/nemo/v2/works/business/total", { params: { user_id: userId } }),
-  userFans: (userId, limit = 12) =>
-    request(apiConfig.codemao, "/creation-tools/v1/user/fans", { params: { user_id: userId, offset: 0, limit } }),
+  userFans: (userId, limit = 12, offset = 0) =>
+    request(apiConfig.creation, "/creation-tools/v1/user/fans", { params: { user_id: userId, offset, limit } }),
   workDetail: (workId) => request(apiConfig.codemao, `/creation-tools/v1/works/${workId}`),
   nemoWorkDetail: (workId) => request(apiConfig.codemao, `/nemo/v2/works/${workId}`),
   workComments: (workId, offset = 0, limit = 10) =>
@@ -315,9 +380,9 @@ const api = {
   activityWorks: (offset = 0, limit = 18) =>
     request(apiConfig.codemao, "/nemo/v3/work/dynamic", { auth: true, params: { offset, limit } }),
   recommendedUsers: () => request(apiConfig.codemao, "/web/users/recommended"),
-  following: (userId, limit = 15) =>
+  following: (userId, limit = 15, offset = 0) =>
     request(apiConfig.creation, "/creation-tools/v1/user/followers", {
-      params: { user_id: userId, offset: 0, limit }
+      params: { user_id: userId, offset, limit }
     }),
   followingLegacy: (userId, limit = 15) =>
     request(apiConfig.codemao, "/web/api/user/me/attention", {
@@ -1111,7 +1176,7 @@ async function loadCircleData() {
 async function loadHomeData() {
   const feed = $("[data-feed]");
   state.posts = [];
-  state.boardOffsets = {};
+  state.boardPages = {};
   state.boardExhausted = {};
   state.feedDone = false;
   feed.replaceChildren(statusCard("正在读取编程猫社区残留内容..."));
@@ -1187,7 +1252,7 @@ async function loadMoreFeed() {
 
     const responses = await Promise.all(
       sourceBoards.map((board) =>
-        api.boardPosts(board.id, state.boardOffsets[board.id] || 0, feedPageSize)
+        api.boardPosts(board.id, state.boardPages[board.id] || 1, feedPageSize)
           .then((response) => ({ board, items: response.items || [] }))
           .catch(() => ({ board, items: null }))
       )
@@ -1195,8 +1260,8 @@ async function loadMoreFeed() {
 
     responses.forEach(({ board, items }) => {
       if (!items) return;
-      const current = state.boardOffsets[board.id] || 0;
-      state.boardOffsets[board.id] = current + feedPageSize;
+      const current = state.boardPages[board.id] || 1;
+      state.boardPages[board.id] = current + 1;
       if (items.length < feedPageSize) state.boardExhausted[board.id] = true;
     });
 
@@ -1418,15 +1483,74 @@ function renderCircleBoard(board) {
     nodes.push(statusCard("这个板块暂时没有读取到帖子"));
   }
   if (!state.circleBoardDone) {
-    const more = document.createElement("button");
-    more.type = "button";
-    more.className = "load-more-btn";
-    more.textContent = state.circleBoardLoading ? "加载中..." : "加载更多帖子";
-    more.disabled = state.circleBoardLoading;
-    more.addEventListener("click", () => openCircleBoard(board, { append: true }));
+    const more = statusCard(state.circleBoardLoading ? "正在加载更多帖子..." : "继续下滑加载更多帖子");
+    more.classList.add("circle-load-sentinel");
+    more.dataset.circleSentinel = "true";
     nodes.push(more);
   }
   root.replaceChildren(...nodes);
+  observeCircleSentinel(board);
+}
+
+function observeCircleSentinel(board) {
+  if (state.circleObserver) {
+    state.circleObserver.disconnect();
+    state.circleObserver = null;
+  }
+  const sentinel = $("[data-circle-sentinel]");
+  if (!sentinel || state.circleBoardDone) return;
+  state.circleObserver = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting) || state.currentView !== "circle") return;
+      openCircleBoard(board, { append: true });
+    },
+    { rootMargin: "360px" }
+  );
+  state.circleObserver.observe(sentinel);
+}
+
+function maybeLoadCircleFromScroll() {
+  if (state.currentView !== "circle" || state.circleBoardLoading || state.circleBoardDone) return;
+  const sentinel = $("[data-circle-sentinel]");
+  if (!sentinel) return;
+  const rect = sentinel.getBoundingClientRect();
+  if (rect.top > window.innerHeight + 420) return;
+  const board = boardById(state.activeCircleBoardId);
+  if (board) openCircleBoard(board, { append: true });
+}
+
+function scrollToPageTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  setTopbarCollapsed(false);
+}
+
+function setTopbarCollapsed(collapsed) {
+  const topbar = $("[data-topbar]");
+  if (!topbar) return;
+  state.topbarCollapsed = Boolean(collapsed);
+  topbar.classList.toggle("collapsed", state.topbarCollapsed);
+}
+
+function syncHomeTopbarVisibility({ force = false } = {}) {
+  const topbar = $("[data-topbar]");
+  if (!topbar) return;
+  const isHome = state.currentView === "home";
+  topbar.classList.toggle("home-topbar", isHome);
+  document.body.classList.toggle("home-viewing", isHome);
+  if (!isHome) {
+    setTopbarCollapsed(false);
+    return;
+  }
+  const current = window.scrollY || 0;
+  const delta = current - state.lastScrollY;
+  if (force || current < 24) {
+    setTopbarCollapsed(false);
+  } else if (delta > 8 && current > 120) {
+    setTopbarCollapsed(true);
+  } else if (delta < -8) {
+    setTopbarCollapsed(false);
+  }
+  state.lastScrollY = current;
 }
 
 async function openCircleBoard(board, { append = false } = {}) {
@@ -1435,19 +1559,20 @@ async function openCircleBoard(board, { append = false } = {}) {
   const boardChanged = String(state.activeCircleBoardId) !== String(board.id);
   if (!append || boardChanged) {
     state.activeCircleBoardId = String(board.id);
-    state.circleBoardOffset = 0;
+    state.circleBoardPage = 1;
     state.circleBoardDone = false;
     state.circleBoardPosts = [];
   }
   state.circleBoardLoading = true;
   renderCircleBoard(board);
   try {
-    const response = await api.boardPosts(board.id, state.circleBoardOffset, 10);
+    const response = await api.boardPosts(board.id, state.circleBoardPage, 10);
     const posts = (response.items || []).map((item) => normalizePost({ ...item, board_name: board.name, board_id: board.id }));
     const seen = new Set(state.circleBoardPosts.map((post) => post.id));
-    state.circleBoardPosts.push(...posts.filter((post) => !seen.has(post.id)));
-    state.circleBoardOffset += 10;
-    state.circleBoardDone = posts.length < 10;
+    const uniquePosts = posts.filter((post) => !seen.has(post.id));
+    state.circleBoardPosts.push(...uniquePosts);
+    state.circleBoardPage += 1;
+    state.circleBoardDone = posts.length < 10 || uniquePosts.length === 0;
   } catch (error) {
     root.replaceChildren(statusCard(`读取${board.name}失败：${error.message}`));
     state.circleBoardDone = true;
@@ -1517,22 +1642,22 @@ function updateTopbar(view) {
   const titles = { home: "PICKCAT", circle: "喵圈", publish: "发布", message: "消息", mine: "我的", search: "", detail: "帖子详情", work: "作品阅览", user: "用户预览", login: "登录" };
   const title = $("[data-title]");
   title.innerHTML = view === "home" ? `<img src="${ASSETS.logo}" alt="PICKCAT" />` : titles[view];
+  title.classList.toggle("is-scroll-top", view === "home");
+  title.setAttribute("role", view === "home" ? "button" : "heading");
+  title.setAttribute("tabindex", view === "home" ? "0" : "-1");
+  title.setAttribute("aria-label", view === "home" ? "回到顶部" : titles[view]);
+  syncHomeTopbarVisibility({ force: true });
   $("[data-back]").classList.toggle("hidden", !["search", "publish", "detail", "work", "user", "login"].includes(view));
   renderTopActions(view);
 }
 
 function renderTopActions(view) {
   const actions = $(".top-actions");
-  const hidden = ["search", "publish", "detail", "work", "user", "login"].includes(view);
+  const hidden = ["mine", "search", "publish", "detail", "work", "user", "login"].includes(view);
   actions.classList.toggle("hidden", hidden);
   if (hidden) return;
-  if (view === "mine") {
-    actions.innerHTML = `<button class="icon-btn" type="button" data-top-menu aria-label="菜单"><img class="top-action-img menu-img" src="${ASSETS.moreMenu}" alt="" /></button>`;
-    return;
-  }
   actions.innerHTML = `
     <button class="icon-btn" type="button" data-search aria-label="搜索"><img class="top-action-img" src="${ASSETS.search}" alt="" /></button>
-    <button class="icon-btn" type="button" data-top-menu aria-label="菜单"><img class="top-action-img menu-img" src="${ASSETS.moreMenu}" alt="" /></button>
   `;
   $("[data-search]", actions)?.addEventListener("click", () => navigateLocal("search"));
   return;
@@ -1885,7 +2010,6 @@ function renderMineShell(user) {
   const avatar = user?.avatar_url || user?.avatar;
   const stats = [
     { label: "ID", value: user?.id || "--" },
-    { label: "金币", value: user?.gold ?? "--" },
     { label: "作品", value: user?.stats?.works ?? (state.mineWorks.length || 0) },
     { label: "粉丝", value: user?.stats?.followers ?? (state.mineFollowers.length || 0) },
     { label: "关注", value: user?.stats?.following ?? (state.mineFollowingUsers.length || 0) }
@@ -1896,10 +2020,6 @@ function renderMineShell(user) {
       <h2>${name}</h2>
       <p>${desc}</p>
       <div class="profile-meta">${stats.map((item) => `<span>${item.label} ${item.value}</span>`).join("")}</div>
-      <div class="profile-actions">
-        <a class="secondary-link" href="pickcat-story.html" target="_blank" rel="noreferrer">项目文章</a>
-        <a class="secondary-link" href="pickcat-story.html#prototype-gallery" target="_blank" rel="noreferrer">宣传图集</a>
-      </div>
     </div>
   `;
 }
@@ -1993,7 +2113,7 @@ function updateProfileTabs() {
 function profileStatCard(user, works) {
   const node = document.createElement("article");
   node.className = "loading-card";
-  node.innerHTML = `账号 ID：${user.id}<br />金币：${user.gold ?? "未知"}<br />作品数：${works.total ?? works.items?.length ?? 0}<br />简介：${escapeHtml(user.description || "这个账号还没有留下简介")}`;
+  node.innerHTML = `\u8d26\u53f7 ID\uff1a${user.id}<br />\u4f5c\u54c1\u6570\uff1a${works.total ?? works.items?.length ?? 0}<br />\u7b80\u4ecb\uff1a${escapeHtml(user.description || "\u8fd9\u4e2a\u8d26\u53f7\u8fd8\u6ca1\u6709\u7559\u4e0b\u7b80\u4ecb")}`;
   return node;
 }
 
@@ -2837,12 +2957,18 @@ async function renderMessagesReadable() {
 
 async function submitLogin(event) {
   event.preventDefault();
+  const submitButton = $("button[type='submit']", event.currentTarget);
   const form = new FormData(event.currentTarget);
   const status = $("[data-login-status]");
   status.textContent = "正在登录...";
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "登录中...";
+  }
   try {
     const identity = String(form.get("identity") || "");
     const password = String(form.get("password") || "");
+    const remember = form.get("remember") === "on";
     let loginResult;
     let method = "password_v1";
 
@@ -2860,12 +2986,23 @@ async function submitLogin(event) {
     const cookie = loginResult.response.headers.get("x-codemao-cookie") || "";
     state.user = result.user_info;
     state.auth = { ...result.auth, cookie, method };
-    localStorage.setItem("pickcat:user", JSON.stringify(state.user));
-    localStorage.setItem("pickcat:auth", JSON.stringify(state.auth));
+    state.savedLogin = remember ? { identity, remember: true } : null;
+    if (remember) {
+      localStorage.setItem("pickcat:login", JSON.stringify(state.savedLogin));
+    } else {
+      localStorage.removeItem("pickcat:login");
+      if (window.PickcatAndroid?.clearLogin) window.PickcatAndroid.clearLogin();
+    }
+    saveSessionToStorage(remember);
     status.textContent = `登录成功（${method}），正在进入我的页面。`;
     navigateLocal("mine");
   } catch (error) {
     status.textContent = `登录失败：${error.message}`;
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "登录";
+    }
   }
 }
 
@@ -2887,7 +3024,18 @@ async function publishPost() {
   }
 }
 
+function normalizeStaticLabels() {
+  const feedLabels = { recommend: "推荐", discover: "发现", following: "关注" };
+  $$("[data-feed-tab]").forEach((tab) => {
+    tab.textContent = feedLabels[tab.dataset.feedTab] || tab.textContent;
+  });
+  $("[data-home-tabs]")?.setAttribute("aria-label", "首页分类");
+  $("[data-back]")?.setAttribute("aria-label", "返回");
+  $("[data-search]")?.setAttribute("aria-label", "搜索");
+}
+
 function bindEvents() {
+  normalizeStaticLabels();
   $$("[data-nav]").forEach((button) => button.addEventListener("click", () => navigateLocal(button.dataset.nav)));
   $("[data-create-open]")?.addEventListener("click", openCreateSheet);
   $$("[data-create-close]").forEach((button) => button.addEventListener("click", closeCreateSheet));
@@ -2924,6 +3072,14 @@ function bindEvents() {
   $("[data-back]").addEventListener("click", () => {
     nativeBack();
   });
+  $("[data-title]").addEventListener("click", () => {
+    if (state.currentView === "home") scrollToPageTop();
+  });
+  $("[data-title]").addEventListener("keydown", (event) => {
+    if (state.currentView !== "home" || !["Enter", " "].includes(event.key)) return;
+    event.preventDefault();
+    scrollToPageTop();
+  });
   $("[data-clear-search]").addEventListener("click", () => {
     state.history = [];
     renderHistory();
@@ -2933,10 +3089,19 @@ function bindEvents() {
     if (event.key === "Enter") runSearch(event.currentTarget.value);
   });
   $("[data-login-form]").addEventListener("submit", submitLogin);
+  hydrateLoginForm();
   $("[data-post]").addEventListener("click", publishPost);
   window.addEventListener("popstate", () => {
     if (!routeFromLocation()) setView("home");
   });
+  window.addEventListener(
+    "scroll",
+    () => {
+      syncHomeTopbarVisibility();
+      maybeLoadCircleFromScroll();
+    },
+    { passive: true }
+  );
   const sentinel = $("[data-feed-sentinel]");
   if (sentinel) {
     new IntersectionObserver(
@@ -2952,6 +3117,7 @@ function bindEvents() {
 }
 
 async function init() {
+  hydrateNativeSession();
   bindEvents();
   renderHistory();
   renderMineShell(state.user);
@@ -2962,9 +3128,11 @@ async function init() {
     sessionStorage.setItem("pickcat:splash-seen", "1");
     setTimeout(() => splash.classList.add("done"), 500);
   }
+  routeFromLocation({ replace: true });
+  syncHomeTopbarVisibility({ force: true });
   await loadCircleData();
   await loadHomeData();
-  routeFromLocation({ replace: true });
+  syncHomeTopbarVisibility({ force: true });
 }
 
 init();

@@ -4,6 +4,20 @@
 
 ## 当前可用发布链路
 
+### GitHub Actions
+
+仓库已补自动工作流：
+
+- `.github/workflows/release-nightly.yml`
+
+行为：
+
+- 推送到 `main` 或 `master` 时自动执行
+- 自动安装依赖并运行 `pnpm run check`
+- 自动构建 Windows 便携版
+- 自动更新 GitHub 上的 `nightly` 预发布
+- 同时上传一份 workflow artifact
+
 ### Windows
 
 ```bash
