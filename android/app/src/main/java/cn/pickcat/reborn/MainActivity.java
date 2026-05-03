@@ -17,6 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,6 +41,7 @@ public class MainActivity extends Activity {
     private View customView;
     private WebChromeClient.CustomViewCallback customViewCallback;
     private SharedPreferences preferences;
+    private OnBackInvokedCallback predictiveBackCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +93,7 @@ public class MainActivity extends Activity {
             }
         });
         setContentView(webView);
+        registerPredictiveBack();
         webView.loadUrl("http://127.0.0.1:" + server.port() + "/");
     }
 
@@ -114,10 +118,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
+    private void handleBackPressed() {
         if (webView == null) {
-            super.onBackPressed();
+            finish();
             return;
         }
         if (customView != null) {
@@ -133,15 +136,40 @@ public class MainActivity extends Activity {
                 if (webView.canGoBack()) {
                     webView.goBack();
                 } else {
-                    MainActivity.super.onBackPressed();
+                    MainActivity.this.finish();
                 }
             }
         );
     }
 
+    private void registerPredictiveBack() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+        predictiveBackCallback = this::handleBackPressed;
+        getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+            OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+            predictiveBackCallback
+        );
+    }
+
+    private void unregisterPredictiveBack() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || predictiveBackCallback == null) {
+            return;
+        }
+        getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(predictiveBackCallback);
+        predictiveBackCallback = null;
+    }
+
+    @Override
+    public void onBackPressed() {
+        handleBackPressed();
+    }
+
     @Override
     protected void onDestroy() {
         hideCustomView();
+        unregisterPredictiveBack();
         if (webView != null) {
             webView.destroy();
         }

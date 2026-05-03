@@ -27,45 +27,8 @@ const apiConfig = {
 };
 
 const feedPageSize = 8;
-const seedPostIds = [403032, 419825];
-
-const referenceShots = [
-  {
-    title: "主页功能标注",
-    source: "403032",
-    src: "https://cdn-community.codemao.cn/47/community/d2ViXzMwMDFfMTQ1OTQ5MjZfMF8xNjMzMDU4OTA1MDEyXzY4OTZkNWVl.jpeg"
-  },
-  {
-    title: "底部导航与发布入口",
-    source: "403032",
-    src: "https://cdn-community.codemao.cn/47/community/d2ViXzMwMDFfMTQ1OTQ5MjZfMF8xNjMzMDU4ODk0ODgyX2ZkZDJiNzQ2.jpeg"
-  },
-  {
-    title: "作品发布表单",
-    source: "403032",
-    src: "https://cdn-community.codemao.cn/47/community/d2ViXzMwMDFfMTQ1OTQ5MjZfMF8xNjMzMDU5NjA5ODU2X2RiOTYzOGU5.png"
-  },
-  {
-    title: "图文动态",
-    source: "403032",
-    src: "https://cdn-community.codemao.cn/47/community/d2ViXzMwMDFfMTQ1OTQ5MjZfMF8xNjMzMDYwMTIzMDY1Xzc3N2E3NDA3.png"
-  },
-  {
-    title: "使用技巧 1",
-    source: "419825",
-    src: "https://cdn-community.codemao.cn/47/community/d2ViXzMwMDFfMTQ1OTQ5MjZfMF8xNjQxNzc3ODI2NDAzXzY5M2IyMDUx.png"
-  },
-  {
-    title: "使用技巧 2",
-    source: "419825",
-    src: "https://cdn-community.codemao.cn/47/community/d2ViXzMwMDFfMTQ1OTQ5MjZfMF8xNjQxNzc3ODQxMzg4X2VhYzg4MDRm.png"
-  },
-  {
-    title: "使用技巧 3",
-    source: "419825",
-    src: "https://cdn-community.codemao.cn/47/community/d2ViXzMwMDFfMTQ1OTQ5MjZfMF8xNjQxNzc3ODUyOTYzXzA1ZmVmNjIx.png"
-  }
-];
+const userListPreviewSize = 6;
+const stackedViews = new Set(["search", "publish", "detail", "work", "user", "login"]);
 
 const circleIconMap = {
   "3": ASSETS.codeIsland,
@@ -107,6 +70,7 @@ const state = {
   boards: [],
   boardPages: {},
   boardExhausted: {},
+  homeLoaded: false,
   feedLoading: false,
   feedDone: false,
   discoverWorks: [],
@@ -144,7 +108,8 @@ const state = {
   savedLogin: JSON.parse(localStorage.getItem("pickcat:login") || "null"),
   lastScrollY: 0,
   topbarCollapsed: false,
-  history: ["Pickcat", "新社区初代体验团", "源码精灵"]
+  history: ["Pickcat", "新社区初代体验团", "源码精灵"],
+  viewTransitionTimer: 0
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -207,6 +172,57 @@ function hydrateLoginForm() {
 
 function runTransition(update) {
   update();
+}
+
+function cleanupViewTransitionClasses() {
+  $$(".view").forEach((section) => {
+    section.classList.remove(
+      "active",
+      "view-enter-forward",
+      "view-enter-back",
+      "view-exit-forward",
+      "view-exit-back",
+      "view-enter-active",
+      "view-exit-active"
+    );
+  });
+}
+
+function animateViewChange(fromView, toView, { direction = "none", immediate = false } = {}) {
+  const next = $(`.view[data-view="${toView}"]`);
+  const current = fromView ? $(`.view[data-view="${fromView}"]`) : null;
+  clearTimeout(state.viewTransitionTimer);
+
+  if (!next) return;
+  if (immediate || !current || current === next || direction === "none") {
+    cleanupViewTransitionClasses();
+    next.classList.add("active");
+    return;
+  }
+
+  cleanupViewTransitionClasses();
+  current.classList.add("active", `view-exit-${direction}`);
+  next.classList.add("active", `view-enter-${direction}`);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      current.classList.add("view-exit-active");
+      next.classList.add("view-enter-active");
+    });
+  });
+  state.viewTransitionTimer = window.setTimeout(() => {
+    cleanupViewTransitionClasses();
+    next.classList.add("active");
+  }, 260);
+}
+
+function resolveViewDirection(fromView, toView, preferred = "") {
+  if (preferred) return preferred;
+  const fromStacked = stackedViews.has(fromView);
+  const toStacked = stackedViews.has(toView);
+  if (!fromStacked && toStacked) return "forward";
+  if (fromStacked && !toStacked) return "back";
+  if (fromStacked && toStacked) return "forward";
+  return "none";
 }
 
 function authHeaders() {
@@ -612,12 +628,12 @@ function nativeBack() {
     if (location.search && history.length > 1) {
       history.back();
     } else {
-      navigateLocal(state.previousView || "home");
+      navigateLocal(state.previousView || "home", {}, { direction: "back" });
     }
     return true;
   }
   if (state.currentView !== "home") {
-    navigateLocal("home");
+    navigateLocal("home", {}, { direction: "back" });
     return true;
   }
   return false;
@@ -843,6 +859,92 @@ function createUserMiniSection(title, users = [], emptyText = "暂时没有读�
   return section;
 }
 
+function mergeUniqueUsers(users = []) {
+  const seen = new Set();
+  return users.filter((user) => {
+    const key = String(user?.id || "");
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function createCollapsibleUserSection(title, users = [], options = {}) {
+  const {
+    total = users.length,
+    emptyText = "暂时没有读取到用户列表",
+    loadMore
+  } = options;
+  const section = document.createElement("section");
+  section.className = "work-comments-section";
+  section.innerHTML = `
+    <div class="section-head flush">
+      <h2>${title}</h2>
+      <div class="section-head-actions">
+        <span class="text-btn text-btn-static">${compactNumber(total)}</span>
+        ${total > userListPreviewSize ? '<button type="button" class="text-btn" data-user-toggle>查看全部</button>' : ""}
+      </div>
+    </div>
+    <div class="user-fan-list" data-user-mini-list></div>
+    <div class="user-list-actions" data-user-list-actions hidden></div>
+  `;
+  const list = $("[data-user-mini-list]", section);
+  const toggle = $("[data-user-toggle]", section);
+  const actions = $("[data-user-list-actions]", section);
+  const items = mergeUniqueUsers(users);
+  let expanded = false;
+  let loading = false;
+  let done = items.length >= total;
+
+  const renderActions = () => {
+    if (!actions) return;
+    actions.hidden = !expanded || done || !loadMore;
+    if (actions.hidden) return;
+    actions.replaceChildren(
+      Object.assign(document.createElement("button"), {
+        type: "button",
+        className: "text-btn",
+        textContent: loading ? `正在加载更多${title}...` : `加载更多${title}`
+      })
+    );
+    $("button", actions)?.addEventListener("click", async () => {
+      if (loading) return;
+      loading = true;
+      renderActions();
+      try {
+        const next = mergeUniqueUsers(await loadMore(items.length));
+        const before = items.length;
+        items.push(...next.filter((user) => !items.some((current) => String(current.id) === String(user.id))));
+        done = items.length >= total || next.length === 0 || items.length === before;
+      } catch (error) {
+        actions.replaceChildren(errorCard(`读取${title}失败：${error.message}`, `${title}读取失败`));
+        actions.hidden = false;
+        loading = false;
+        return;
+      }
+      loading = false;
+      render();
+    });
+  };
+
+  const render = () => {
+    const visibleUsers = expanded ? items : items.slice(0, userListPreviewSize);
+    list.replaceChildren(
+      ...(items.length ? visibleUsers.map((user) => createUserMiniCard(user)) : [statusCard(emptyText)])
+    );
+    if (toggle) toggle.textContent = expanded ? "收起" : "查看全部";
+    renderActions();
+  };
+
+  toggle?.addEventListener("click", () => {
+    expanded = !expanded;
+    render();
+  });
+
+  render();
+  return section;
+}
+
 function readCachedUser(id) {
   try {
     return JSON.parse(sessionStorage.getItem(`pickcat:user:${id}`) || "null");
@@ -866,7 +968,7 @@ function createWorkReaderUrl(work) {
   return url.toString();
 }
 
-function navigateLocal(view, params = {}) {
+function navigateLocal(view, params = {}, options = {}) {
   const url = new URL(location.pathname, location.origin);
   ["id", "q"].forEach((key) => url.searchParams.delete(key));
   url.searchParams.set("view", view);
@@ -880,7 +982,7 @@ function navigateLocal(view, params = {}) {
   if (view !== "work") state.activeWorkId = "";
   if (view !== "user") state.activeUserId = "";
   if (view !== "detail") state.activePostId = "";
-  setView(view);
+  setView(view, { direction: resolveViewDirection(state.currentView, view, options.direction) });
   window.scrollTo({ top: 0 });
 }
 
@@ -1010,44 +1112,34 @@ function isOfficialPinnedPost(item) {
   return Boolean(item.is_pinned || item.is_top || (officialAuthor && officialTitle));
 }
 
-function statusCard(text) {
+function cardTitleByTone(tone) {
+  if (tone === "loading") return "加载中";
+  if (tone === "error") return "读取失败";
+  return "提示";
+}
+
+function stateCardMarkup(text, { tone = "info", title = "" } = {}) {
+  const icon =
+    tone === "loading"
+      ? '<span class="loading-card-spinner" aria-hidden="true"></span>'
+      : `<span class="loading-card-badge" aria-hidden="true">${tone === "error" ? "!" : "i"}</span>`;
+  return `${icon}<div class="loading-card-copy"><strong>${escapeHtml(title || cardTitleByTone(tone))}</strong><span>${escapeHtml(text)}</span></div>`;
+}
+
+function statusCard(text, options = {}) {
+  const tone = options.tone || "info";
   const node = document.createElement("div");
-  node.className = "loading-card";
-  node.textContent = text;
+  node.className = `loading-card is-${tone}`;
+  node.innerHTML = stateCardMarkup(text, options);
   return node;
 }
 
-function fallbackPost(id) {
-  const detail = {
-    "403032": {
-      title: "入新社区初代体验团的所见所闻（十九）（pickcat使用教程）",
-      board_name: "热门活动",
-      created_at: 1633060417,
-      n_views: 739,
-      n_replies: 6,
-      content: referenceShots
-        .filter((shot) => shot.source === "403032")
-        .map((shot) => `<p><img src="${shot.src}" alt="${shot.title}"></p>`)
-        .join("")
-    },
-    "419825": {
-      title: "入新社区初代体验团的所见所闻（二十）（pickcat使用小技巧）",
-      board_name: "热门活动",
-      created_at: 1641777928,
-      n_views: 300,
-      n_replies: 3,
-      content: referenceShots
-        .filter((shot) => shot.source === "419825")
-        .map((shot) => `<p><img src="${shot.src}" alt="${shot.title}"></p>`)
-        .join("")
-    }
-  }[String(id)];
+function loadingCard(text, title = "加载中") {
+  return statusCard(text, { tone: "loading", title });
+}
 
-  return normalizePost({
-    id,
-    ...detail,
-    user: { nickname: "旁观者JErS", work_shop_name: "StarDreamNet团队" }
-  });
+function errorCard(text, title = "读取失败") {
+  return statusCard(text, { tone: "error", title });
 }
 
 function mergePosts(posts) {
@@ -1191,18 +1283,16 @@ async function loadHomeData() {
   state.boardPages = {};
   state.boardExhausted = {};
   state.feedDone = false;
-  feed.replaceChildren(statusCard("正在读取编程猫社区残留内容..."));
-
+  state.homeLoaded = false;
+  feed.replaceChildren(loadingCard("正在读取社区帖子和推荐内容...", "首页加载中"));
   try {
-    const seedPosts = await Promise.all(
-      seedPostIds.map((id) => api.postDetail(id).then(normalizePost).catch(() => fallbackPost(id)))
-    );
-    mergePosts(seedPosts);
-  } catch {
-    mergePosts(seedPostIds.map(fallbackPost));
+    await Promise.all([loadDiscoverWorks(), loadRecommendedUsers()]);
+    await loadMoreFeed();
+  } finally {
+    state.homeLoaded = true;
+    renderFeed();
+    updateFeedSentinel();
   }
-  await Promise.all([loadDiscoverWorks(), loadRecommendedUsers()]);
-  await loadMoreFeed();
 }
 
 async function loadDiscoverWorks() {
@@ -1288,7 +1378,7 @@ async function loadMoreFeed() {
     state.feedDone = state.posts.length === before && sourceBoards.every((board) => state.boardExhausted[board.id]);
     renderFeed();
   } catch (error) {
-    if (!state.posts.length) $("[data-feed]").replaceChildren(statusCard(`社区流读取失败：${error.message}`));
+    if (!state.posts.length) $("[data-feed]").replaceChildren(errorCard(`社区流读取失败：${error.message}`, "社区流失败"));
     const sentinel = $("[data-feed-sentinel]");
     if (sentinel) sentinel.textContent = `加载失败：${error.message}`;
   } finally {
@@ -1302,7 +1392,7 @@ function renderFeed() {
     if (!state.discoverLoaded && !state.discoverLoading) loadDiscoverWorks().then(renderFeed);
     const nodes = state.discoverWorks.length
       ? state.discoverWorks.map(createHomeWorkCard)
-      : [statusCard(state.discoverLoading ? "正在读取发现作品..." : "暂时没有发现作品")];
+      : [state.discoverLoading || !state.discoverLoaded ? loadingCard("正在读取发现作品...", "发现加载中") : statusCard("暂时没有发现作品")];
     $("[data-feed]").replaceChildren(...nodes);
     updateFeedSentinel();
     renderMineFeed();
@@ -1317,8 +1407,8 @@ function renderFeed() {
     if (state.followingUsers.length) {
       nodes.push(createUserMiniSection("我关注的人", state.followingUsers, "暂时没有读取到关注列表"));
     }
-    if (state.followingLoading && !data.length) {
-      nodes.push(statusCard("正在读取关注列表和动态作品..."));
+    if ((!state.followingLoaded || state.followingLoading) && !data.length) {
+      nodes.push(loadingCard("正在读取关注列表和动态作品...", "关注加载中"));
     } else if (data.length) {
       nodes.push(...data.map((item) => (item.feedType === "work" ? createHomeWorkCard(item) : createPost(item))));
     } else {
@@ -1344,7 +1434,7 @@ function renderFeed() {
     const user = state.recommendedUsers[index % Math.max(state.recommendedUsers.length, 1)];
     if (user && index === 1) nodes.push(createUserRecommendCard(user));
   });
-  if (!nodes.length) nodes.push(statusCard("暂时没有返回动态"));
+  if (!nodes.length) nodes.push(!state.homeLoaded || state.feedLoading ? loadingCard("正在读取社区动态...", "首页加载中") : statusCard("暂时没有返回动态"));
   $("[data-feed]").replaceChildren(...nodes);
   updateFeedSentinel();
   renderMineFeed();
@@ -1460,11 +1550,6 @@ async function loadFollowingFeed() {
     state.followingDone = state.followingDynamicDone && state.followingNameOffset >= state.followingNames.length;
     state.followingLoaded = true;
   } catch {
-    const seen = new Set(state.followingPosts.map((post) => post.id));
-    const fallback = state.posts
-      .filter((post) => post.author === state.user?.nickname && !seen.has(post.id))
-      .slice(0, 8);
-    state.followingPosts.push(...fallback);
     state.followingLoaded = true;
     state.followingDone = true;
   } finally {
@@ -1490,12 +1575,14 @@ function renderCircleBoard(board) {
   if (state.circleBoardPosts.length) {
     nodes.push(...state.circleBoardPosts.map(createPost));
   } else if (state.circleBoardLoading) {
-    nodes.push(statusCard(`正在读取${board.name}板块...`));
+    nodes.push(loadingCard(`正在读取${board.name}板块...`, "板块加载中"));
   } else {
     nodes.push(statusCard("这个板块暂时没有读取到帖子"));
   }
   if (!state.circleBoardDone) {
-    const more = statusCard(state.circleBoardLoading ? "正在加载更多帖子..." : "继续下滑加载更多帖子");
+    const more = state.circleBoardLoading
+      ? loadingCard("正在加载更多帖子...", "继续加载中")
+      : statusCard("继续下滑加载更多帖子");
     more.classList.add("circle-load-sentinel");
     more.dataset.circleSentinel = "true";
     nodes.push(more);
@@ -1675,12 +1762,13 @@ function renderTopActions(view) {
   return;
 }
 
-function setView(view) {
+function setView(view, options = {}) {
   runTransition(() => {
     closeCreateSheet();
-    if (state.currentView !== view) state.previousView = state.currentView;
+    const fromView = state.currentView;
+    if (fromView !== view) state.previousView = fromView;
     state.currentView = view;
-    $$(".view").forEach((section) => section.classList.toggle("active", section.dataset.view === view));
+    animateViewChange(fromView, view, options);
     $$(".nav-item").forEach((item) => {
       const active = item.dataset.nav === view;
       item.classList.toggle("active", active);
@@ -1698,31 +1786,31 @@ function setView(view) {
   });
 }
 
-function routeFromLocation({ replace = false } = {}) {
+function routeFromLocation({ replace = false, direction = "none", immediate = false } = {}) {
   const params = new URLSearchParams(location.search);
   const view = params.get("view");
   const id = params.get("id") || "";
   if (view === "work" && id) {
     state.activeWorkId = id;
     if (replace) history.replaceState({ view, id }, "", location.href);
-    setView("work");
+    setView("work", { direction, immediate });
     return true;
   }
   if (view === "user" && id) {
     state.activeUserId = id;
     if (replace) history.replaceState({ view, id }, "", location.href);
-    setView("user");
+    setView("user", { direction, immediate });
     return true;
   }
   if (view === "detail" && id) {
     state.activePostId = id;
     if (replace) history.replaceState({ view, id }, "", location.href);
-    setView("detail");
+    setView("detail", { direction, immediate });
     return true;
   }
   if (["home", "circle", "publish", "message", "mine", "search", "login"].includes(view)) {
     if (replace) history.replaceState({ view }, "", location.href);
-    setView(view);
+    setView(view, { direction, immediate });
     return true;
   }
   if (replace) history.replaceState({ view: state.currentView }, "", location.href);
@@ -1768,13 +1856,13 @@ async function runSearch(keyword) {
   navigateLocal("search", { q: value });
   $("[data-search-input]").value = value;
   const root = $("[data-search-results]");
-  root.replaceChildren(statusCard(`正在搜索：${value}`));
+  root.replaceChildren(loadingCard(`正在搜索：${value}`, "搜索中"));
   try {
     const result = await api.searchPosts(value, 20);
     const posts = (result.items || []).map(normalizePost);
     root.replaceChildren(...(posts.length ? posts.map(createPost) : [statusCard("没有找到相关帖子")]));
   } catch (error) {
-    root.replaceChildren(statusCard(`搜索失败：${error.message}`));
+    root.replaceChildren(errorCard(`搜索失败：${error.message}`, "搜索失败"));
   }
 }
 
@@ -1785,22 +1873,9 @@ function openPost(id) {
 
 async function renderPostDetail(id) {
   const root = $("[data-detail]");
-  root.replaceChildren(statusCard(`正在读取帖子 ${id}...`));
+  root.replaceChildren(loadingCard(`正在读取帖子 ${id}...`, "帖子加载中"));
   try {
-    const detail = await api.postDetail(id).catch(() => {
-      const fallback = fallbackPost(id);
-      return {
-        id,
-        title: fallback.title,
-        content: fallback.images.map((src) => `<p><img src="${src}" alt=""></p>`).join(""),
-        user: { nickname: fallback.author },
-        board_name: fallback.circle,
-        created_at: fallback.createdAt,
-        n_views: fallback.stats[0],
-        n_replies: fallback.stats[1],
-        n_comments: 0
-      };
-    });
+    const detail = await api.postDetail(id);
     const detailUser = {
       id: detail.user?.id || detail.user_id || "",
       nickname: detail.user?.nickname || "不存在的用户",
@@ -1834,7 +1909,7 @@ async function renderPostDetail(id) {
           <button class="primary-btn" type="submit">${state.auth?.token ? "发送评论" : "登录后评论"}</button>
         </form>
         <div class="reply-list" data-reply-list>
-          <div class="loading-card">正在读取回帖...</div>
+          <div class="loading-card is-loading">${stateCardMarkup("正在读取回帖...", { tone: "loading", title: "评论加载中" })}</div>
         </div>
       </section>
     `;
@@ -1848,7 +1923,7 @@ async function renderPostDetail(id) {
     bindDetailReplyEvents(id);
     await loadPostReplies(id);
   } catch (error) {
-    root.replaceChildren(statusCard(`帖子读取失败：${error.message}`));
+    root.replaceChildren(errorCard(`帖子读取失败：${error.message}`, "帖子读取失败"));
   }
 }
 
@@ -1973,7 +2048,7 @@ function createReplyCard(reply) {
 async function loadPostReplies(postId) {
   const list = $("[data-reply-list]");
   if (!list) return;
-  list.replaceChildren(statusCard("正在读取回帖..."));
+  list.replaceChildren(loadingCard("正在读取回帖...", "评论加载中"));
   try {
     const result = await api.postReplies(postId, 1, 10);
     const replies = (result.items || []).map(normalizeReply);
@@ -1986,7 +2061,7 @@ async function loadPostReplies(postId) {
       state.pendingPostReplyId = "";
     }
   } catch (error) {
-    list.replaceChildren(statusCard(`回帖读取失败：${error.message}`));
+    list.replaceChildren(errorCard(`回帖读取失败：${error.message}`, "评论读取失败"));
   }
 }
 
@@ -2046,7 +2121,7 @@ async function renderMinePage() {
     return;
   }
   const root = $("[data-mine-feed]");
-  root.replaceChildren(statusCard("正在读取个人信息和作品列表..."));
+  root.replaceChildren(loadingCard("正在读取个人信息和作品列表...", "个人页加载中"));
   try {
     const me = await api.me();
     const [profile, legacy, dynamic, metrics, tiger, centerWorks, published, fanData, following, followingLegacy] = await Promise.all([
@@ -2094,7 +2169,7 @@ async function renderMinePage() {
     renderMineShell(mergedUser);
     renderMineContent(mergedUser, { total: state.mineWorks.length, items: state.mineWorks });
   } catch (error) {
-    root.replaceChildren(statusCard(`登录态不可用：${error.message}`), loginPrompt("重新登录"));
+    root.replaceChildren(errorCard(`登录态不可用：${error.message}`, "登录状态失效"), loginPrompt("重新登录"));
   }
 }
 
@@ -2112,10 +2187,11 @@ function renderMineLoggedOut() {
 function renderMineContent(user, worksRaw = { items: [] }) {
   const root = $("[data-mine-feed]");
   if (state.mineTab === "activity") {
-    const activities = [profileStatCard(user, worksRaw)];
+    const activities = [];
     if (state.mineFollowingUsers.length) activities.push(createUserMiniSection("我的关注", state.mineFollowingUsers.slice(0, 6), "还没有读取到关注"));
     if (state.mineFollowers.length) activities.push(createUserMiniSection("我的粉丝", state.mineFollowers.slice(0, 6), "还没有读取到粉丝"));
     if (state.mineWorks.length) activities.push(...state.mineWorks.map(createMineActivityCard));
+    if (!activities.length) activities.push(statusCard("还没有动态"));
     root.replaceChildren(...activities);
   } else if (state.mineTab === "works") {
     root.replaceChildren(...(state.mineWorks.length ? state.mineWorks.map(createWorkCard) : [statusCard("还没有读取到公开作品")]));
@@ -2132,13 +2208,6 @@ function updateProfileTabs() {
   $$("#mine-view .profile-tabs .tab").forEach((tab, index) => {
     tab.classList.toggle("active", state.mineTab === keys[index]);
   });
-}
-
-function profileStatCard(user, works) {
-  const node = document.createElement("article");
-  node.className = "loading-card";
-  node.innerHTML = `\u8d26\u53f7 ID\uff1a${user.id}<br />\u4f5c\u54c1\u6570\uff1a${works.total ?? works.items?.length ?? 0}<br />\u7b80\u4ecb\uff1a${escapeHtml(user.description || "\u8fd9\u4e2a\u8d26\u53f7\u8fd8\u6ca1\u6709\u7559\u4e0b\u7b80\u4ecb")}`;
-  return node;
 }
 
 function createWorkCard(work) {
@@ -2284,7 +2353,7 @@ async function renderWorkReader() {
     return;
   }
 
-  root.innerHTML = `<div class="work-reader-empty">正在读取作品...</div>`;
+  root.replaceChildren(loadingCard("正在读取作品详情和评论...", "作品加载中"));
   let detail = readCachedWork(id) || normalizeWork({ id });
   let comments = [];
   let totalComments = 0;
@@ -2636,14 +2705,16 @@ async function renderUserReader() {
   const params = new URLSearchParams(location.search);
   const id = params.get("id") || state.activeUserId || "";
   if (!id) {
-    root.replaceChildren(statusCard("没有找到用户 ID"));
+    root.replaceChildren(errorCard("没有找到用户 ID", "用户读取失败"));
     return;
   }
-  root.replaceChildren(statusCard("正在读取用户主页..."));
+  root.replaceChildren(loadingCard("正在读取用户主页...", "用户页加载中"));
   let user = readCachedUser(id) || { id, nickname: "编程猫用户", avatar: "", description: "", stats: {} };
   let works = [];
   let fans = [];
   let followingUsers = [];
+  let fanOffset = 0;
+  let followingOffset = 0;
   try {
     const [profile, legacy, dynamic, metrics, tiger, centerWorks, oldCenterWorks, published, fanData, following, followingLegacy] = await Promise.all([
       api.userProfile(id).catch(() => null),
@@ -2654,9 +2725,9 @@ async function renderUserReader() {
       api.userCenterWorks(id, 12).catch(() => ({ items: [] })),
       api.workList(id).catch(() => ({ items: [] })),
       api.publishedWorks(id, 12).catch(() => ({ data: { works: [] } })),
-      api.userFans(id, 6).catch(() => ({ items: [] })),
-      api.following(id, 6).catch(() => ({ items: [] })),
-      api.followingLegacy(id, 6).catch(() => ({ items: [] }))
+      api.userFans(id, 30).catch(() => ({ items: [] })),
+      api.following(id, 30).catch(() => ({ items: [] })),
+      api.followingLegacy(id, 30).catch(() => ({ items: [] }))
     ]);
     user = mergeUserProfile(user, profile, legacy, dynamic, metrics, tiger);
     const publishedItems = published.data?.works || published.works || [];
@@ -2673,11 +2744,15 @@ async function renderUserReader() {
       cacheWorkForReader(work);
       return work;
     });
-    fans = responseItems(fanData).map(normalizeUserListItem).filter((item) => item.id).slice(0, 6);
-    followingUsers = [...responseItems(following), ...responseItems(followingLegacy)]
+    const fanItems = responseItems(fanData);
+    const followingItems = responseItems(following);
+    const legacyFollowingItems = responseItems(followingLegacy);
+    fanOffset = fanItems.length;
+    followingOffset = followingItems.length;
+    fans = fanItems.map(normalizeUserListItem).filter((item) => item.id);
+    followingUsers = [...followingItems, ...legacyFollowingItems]
       .map(normalizeUserListItem)
-      .filter((item, index, list) => item.id && list.findIndex((userItem) => userItem.id === item.id) === index)
-      .slice(0, 6);
+      .filter((item, index, list) => item.id && list.findIndex((userItem) => userItem.id === item.id) === index);
     user = cacheUser({
       ...user,
       stats: {
@@ -2698,7 +2773,7 @@ async function renderUserReader() {
     }
   } catch (error) {
     user = cacheUser(user);
-    root.replaceChildren(statusCard(`用户资料读取不完整：${error.message}`));
+    root.replaceChildren(errorCard(`用户资料读取不完整：${error.message}`, "用户资料读取失败"));
   }
   root.innerHTML = `
     <section class="user-reader-hero ${user.cover ? "has-cover" : ""}">
@@ -2724,21 +2799,35 @@ async function renderUserReader() {
       <div class="section-head flush"><h2>作品</h2><button type="button" class="text-btn">${works.length} 个</button></div>
       <div class="user-work-grid" data-user-works></div>
     </section>
-    <section class="work-comments-section">
-      <div class="section-head flush"><h2>粉丝</h2><button type="button" class="text-btn">${fans.length}</button></div>
-      <div class="user-fan-list" data-user-fans></div>
-    </section>
-    <section class="work-comments-section">
-      <div class="section-head flush"><h2>关注</h2><button type="button" class="text-btn">${followingUsers.length}</button></div>
-      <div class="user-fan-list" data-user-following></div>
-    </section>
+    <div data-user-fans-section></div>
+    <div data-user-following-section></div>
   `;
   const list = $("[data-user-works]", root);
   list.replaceChildren(...(works.length ? works.map(createHomeWorkCard) : [statusCard("暂时没有读取到公开作品")]));
-  const fanList = $("[data-user-fans]", root);
-  fanList.replaceChildren(...(fans.length ? fans.map((fan) => createUserMiniCard(fan)) : [statusCard("暂时没有读取到粉丝列表")]));
-  const followingList = $("[data-user-following]", root);
-  followingList.replaceChildren(...(followingUsers.length ? followingUsers.map((item) => createUserMiniCard(item)) : [statusCard("暂时没有读取到关注列表")]));
+  $("[data-user-fans-section]", root)?.replaceWith(
+    createCollapsibleUserSection("粉丝", fans, {
+      total: Number(user.stats?.followers || fans.length),
+      emptyText: "暂时没有读取到粉丝列表",
+      loadMore: async () => {
+        const result = await api.userFans(id, 30, fanOffset);
+        const items = responseItems(result);
+        fanOffset += items.length;
+        return items.map(normalizeUserListItem).filter((item) => item.id);
+      }
+    })
+  );
+  $("[data-user-following-section]", root)?.replaceWith(
+    createCollapsibleUserSection("关注", followingUsers, {
+      total: Number(user.stats?.following || followingUsers.length),
+      emptyText: "暂时没有读取到关注列表",
+      loadMore: async () => {
+        const result = await api.following(id, 30, followingOffset);
+        const items = responseItems(result);
+        followingOffset += items.length;
+        return items.map(normalizeUserListItem).filter((item) => item.id);
+      }
+    })
+  );
   $("[data-follow-reader]", root)?.addEventListener("click", async (event) => {
     if (!state.auth?.token) {
       navigateLocal("login");
@@ -2992,7 +3081,7 @@ async function renderMessagesReadable() {
     root.appendChild(loginPrompt("去登录"));
     return;
   }
-  root.innerHTML = `<div class="feed compact message-feed" data-message-feed><div class="loading-card">正在读取消息...</div></div>`;
+  root.innerHTML = `<div class="feed compact message-feed" data-message-feed><div class="loading-card is-loading">${stateCardMarkup("正在读取消息...", { tone: "loading", title: "消息加载中" })}</div></div>`;
   const feed = $("[data-message-feed]");
   try {
     const counts = await api.messageCount();
@@ -3018,7 +3107,7 @@ async function renderMessagesReadable() {
       ...(records.length ? records.map(createMessageCard) : [statusCard("暂时没有新消息")])
     );
   } catch (error) {
-    feed.replaceChildren(statusCard(`消息接口失败：${error.message}`));
+    feed.replaceChildren(errorCard(`消息接口失败：${error.message}`, "消息读取失败"));
   }
 }
 
@@ -3159,7 +3248,7 @@ function bindEvents() {
   hydrateLoginForm();
   $("[data-post]").addEventListener("click", publishPost);
   window.addEventListener("popstate", () => {
-    if (!routeFromLocation()) setView("home");
+    if (!routeFromLocation({ direction: "back" })) setView("home", { direction: "back" });
   });
   window.addEventListener(
     "scroll",
@@ -3195,7 +3284,7 @@ async function init() {
     sessionStorage.setItem("pickcat:splash-seen", "1");
     setTimeout(() => splash.classList.add("done"), 500);
   }
-  routeFromLocation({ replace: true });
+  routeFromLocation({ replace: true, immediate: true });
   syncHomeTopbarVisibility({ force: true });
   await loadCircleData();
   await loadHomeData();
