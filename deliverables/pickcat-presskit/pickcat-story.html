@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>我们还原了编程猫被遗忘的项目</title>
+    <meta
+      name="description"
+      content="Pickcat Reborn：一篇关于编程猫移动社区项目 Pickcat 的复刻记录，包含历史截图、现版原型截图、证据链与项目过程。"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #09111f;
+        --panel: rgba(14, 24, 42, 0.78);
+        --panel-strong: #101b31;
+        --card: #ffffff;
+        --text: #152033;
+        --muted: #5f6b7d;
+        --line: rgba(145, 169, 209, 0.18);
+        --blue: #4188ff;
+        --blue-soft: rgba(65, 136, 255, 0.12);
+        --gold: #ffd36c;
+        --shadow: 0 24px 80px rgba(4, 10, 20, 0.28);
+        font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top, rgba(63, 126, 255, 0.24), transparent 38%),
+          linear-gradient(180deg, #09111f 0%, #0d1730 30%, #eef4ff 30%, #f7faff 100%);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      img {
+        max-width: 100%;
+        display: block;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 88px 20px 64px;
+        color: #fff;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: auto -8% -44% auto;
+        width: 420px;
+        height: 420px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 211, 108, 0.3), transparent 68%);
+        filter: blur(10px);
+      }
+
+      .hero-inner,
+      .content,
+      .footer {
+        width: min(1120px, calc(100vw - 32px));
+        margin: 0 auto;
+      }
+
+      .hero-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 32px;
+        padding: 28px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06)),
+          var(--panel);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+
+      .hero-logo {
+        width: 140px;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: #d9e7ff;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      h1 {
+        margin: 18px 0 14px;
+        max-width: 820px;
+        font-size: clamp(34px, 6vw, 62px);
+        line-height: 1.04;
+      }
+
+      .hero-lead {
+        max-width: 780px;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 18px;
+        line-height: 1.8;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .hero-actions a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 800;
+      }
+
+      .hero-actions .primary {
+        color: #102347;
+        background: #fff;
+      }
+
+      .hero-actions .secondary {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .hero-meta {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 30px;
+      }
+
+      .hero-metric {
+        border-radius: 20px;
+        padding: 18px 16px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .hero-metric strong {
+        display: block;
+        font-size: 26px;
+      }
+
+      .hero-metric span {
+        display: block;
+        margin-top: 6px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 13px;
+      }
+
+      .content {
+        margin-top: -18px;
+      }
+
+      .section {
+        margin-bottom: 24px;
+        border: 1px solid rgba(175, 194, 229, 0.36);
+        border-radius: 28px;
+        padding: 30px 28px;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 18px 50px rgba(24, 43, 75, 0.08);
+        backdrop-filter: blur(8px);
+      }
+
+      .section.dark {
+        color: #edf4ff;
+        background: linear-gradient(180deg, rgba(16, 27, 49, 0.96), rgba(11, 20, 39, 0.98));
+      }
+
+      .section.dark p,
+      .section.dark li,
+      .section.dark .quote,
+      .section.dark .caption {
+        color: rgba(237, 244, 255, 0.8);
+      }
+
+      .section-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .section-head h2 {
+        margin: 0;
+        font-size: clamp(24px, 4vw, 36px);
+      }
+
+      .section-head span {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      p {
+        margin: 0 0 14px;
+        font-size: 16px;
+        line-height: 1.9;
+      }
+
+      .lead {
+        font-size: 18px;
+      }
+
+      .quote {
+        margin: 18px 0;
+        border-left: 4px solid var(--blue);
+        padding: 10px 0 10px 16px;
+        color: #34445e;
+        font-size: 18px;
+        line-height: 1.8;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .chip {
+        border-radius: 999px;
+        padding: 8px 14px;
+        background: var(--blue-soft);
+        color: var(--blue);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .card,
+      .step,
+      .timeline-item {
+        border: 1px solid rgba(162, 184, 221, 0.28);
+        border-radius: 22px;
+        padding: 18px;
+        background: #fff;
+      }
+
+      .dark .card,
+      .dark .step,
+      .dark .timeline-item {
+        border-color: rgba(149, 173, 214, 0.14);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .card strong,
+      .step strong,
+      .timeline-item strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 18px;
+      }
+
+      .card p,
+      .step p,
+      .timeline-item p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.8;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 14px;
+      }
+
+      .timeline-item {
+        position: relative;
+        padding-left: 22px;
+      }
+
+      .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 22px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--blue);
+        box-shadow: 0 0 0 8px rgba(65, 136, 255, 0.14);
+      }
+
+      .gallery-group + .gallery-group {
+        margin-top: 18px;
+      }
+
+      .gallery-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .gallery-head h3 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .gallery-head span {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .figure-card {
+        overflow: hidden;
+        border-radius: 22px;
+        background: #f4f8ff;
+        box-shadow: 0 16px 30px rgba(24, 43, 75, 0.08);
+      }
+
+      .figure-button {
+        width: 100%;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        cursor: zoom-in;
+      }
+
+      .figure-button img {
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        object-fit: cover;
+        background: #dfe9ff;
+      }
+
+      .figure-copy {
+        padding: 14px 14px 16px;
+      }
+
+      .figure-copy strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      .caption {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .manifesto {
+        display: grid;
+        gap: 12px;
+        margin-top: 10px;
+      }
+
+      .manifesto p {
+        margin: 0;
+        border-radius: 18px;
+        padding: 16px 18px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .footer {
+        padding: 0 0 40px;
+      }
+
+      .footer-card {
+        border-radius: 28px;
+        padding: 26px 28px;
+        color: #d8e7ff;
+        background: #0e1930;
+        box-shadow: var(--shadow);
+      }
+
+      .footer-card h2 {
+        margin: 0 0 12px;
+        color: #fff;
+        font-size: 28px;
+      }
+
+      .footer-card p {
+        margin: 0;
+        color: rgba(216, 231, 255, 0.78);
+      }
+
+      .lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: none;
+        place-items: center;
+        padding: 24px;
+        background: rgba(6, 10, 18, 0.82);
+        backdrop-filter: blur(10px);
+      }
+
+      .lightbox.open {
+        display: grid;
+      }
+
+      .lightbox button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 42px;
+        height: 42px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+        font-size: 24px;
+        cursor: pointer;
+      }
+
+      .lightbox img {
+        max-width: min(1100px, 100%);
+        max-height: calc(100vh - 96px);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+      }
+
+      @media (max-width: 980px) {
+        .hero-meta,
+        .grid-4 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .grid-3,
+        .gallery {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 720px) {
+        .hero {
+          padding-top: 58px;
+        }
+
+        .hero-card,
+        .section,
+        .footer-card {
+          padding: 22px 18px;
+          border-radius: 24px;
+        }
+
+        .hero-meta,
+        .grid-2,
+        .grid-3,
+        .grid-4,
+        .gallery {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-lead,
+        .lead,
+        p {
+          font-size: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero" id="top">
+      <div class="hero-inner">
+        <div class="hero-card">
+          <img class="hero-logo" src="./public/assets/pickcat/ic_home_logo.png" alt="Pickcat" />
+          <span class="eyebrow">Pickcat Reborn / Project Record</span>
+          <h1>我们还原了编程猫被遗忘的项目</h1>
+          <p class="hero-lead">
+            它叫 Pickcat。它曾经存在过，后来消失了。留下来的不是完整源码，而是截图、图标、旧安装包、接口残片，和一小段还没有被完全抹掉的使用痕迹。我们做的事，不是伪造一段怀旧，而是把这些证据重新组织成一个还能运行、还能观看、还能继续被讲述的版本。
+          </p>
+          <div class="hero-actions">
+            <a class="primary" href="#gallery">直接看截图</a>
+            <a class="secondary" href="#evidence">看证据链</a>
+            <a class="secondary" href="#prototype-gallery">看现版演示</a>
+          </div>
+          <div class="hero-meta">
+            <div class="hero-metric">
+              <strong>9</strong>
+              <span>已归档历史截图</span>
+            </div>
+            <div class="hero-metric">
+              <strong>4</strong>
+              <span>现版宣传截图已生成</span>
+            </div>
+            <div class="hero-metric">
+              <strong>多接口</strong>
+              <span>论坛、作品、用户、消息已接入</span>
+            </div>
+            <div class="hero-metric">
+              <strong>可运行</strong>
+              <span>Web、Windows、Android 原型已形成</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="section">
+        <div class="section-head">
+          <h2>Pickcat 是什么</h2>
+          <span>一个消失过的移动社区形态</span>
+        </div>
+        <p class="lead">
+          如果把编程猫社区想成一座长期存在的网页城市，那么 Pickcat 更像是它曾经做过的一次移动端迁徙实验。
+        </p>
+        <p>
+          它不是简单把网页塞进手机壳里，而是有自己的一套节奏：更偏移动端的首页推荐流、独立的喵圈入口、消息页、个人主页、作品浏览页，以及明显服务于手机使用习惯的布局方式。从残留截图和资源命名来看，它当年认真地试图成为一个真正的 App，而不是一个临时页面。
+        </p>
+        <div class="quote">
+          有些产品死掉，不是因为它从未存在，而是因为它存在过，却没有被好好记录。
+        </div>
+        <div class="chips">
+          <span class="chip">移动端社区</span>
+          <span class="chip">独立首页流</span>
+          <span class="chip">喵圈与消息</span>
+          <span class="chip">作品浏览</span>
+          <span class="chip">更强的 App 感</span>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>为什么要还原它</h2>
+          <span>因为它并没有彻底消失</span>
+        </div>
+        <p>
+          Pickcat 现在已经不能直接正常使用。原始 APK 受加固影响，服务端环境也早已变化，旧分发方式更是断代。想让它回来，已经不是“修一修老包”那么简单。
+        </p>
+        <p>
+          但它并没有彻底空无一物。它还留着背景图、底部导航图标、登录素材、论坛里的教程帖、零散的使用技巧页、社区里尚能访问的部分接口。那两篇关键帖子曾经是 `403032` 和 `419825`，如今页面已经提示找不到，但其中的九张截图和它们留下的功能线索，已经被我们本地保存下来。换句话说，它还留着可以被继续考古的物证。
+        </p>
+        <div class="grid-3">
+          <article class="card">
+            <strong>旧 APK 资源</strong>
+            <p>保留下了图标、背景、入口按钮和部分视觉元素，让复刻不再是凭印象绘制。</p>
+          </article>
+          <article class="card">
+            <strong>历史帖子截图</strong>
+            <p>两篇重要帖子留下了首页、教程、技巧、登录和个人页的关键画面。</p>
+          </article>
+          <article class="card">
+            <strong>社区残留接口</strong>
+            <p>论坛、作品、用户、消息等数据仍能部分读取，于是原型不只是静态展板。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="evidence">
+        <div class="section-head">
+          <h2>证据链还在</h2>
+          <span>这不是空想，是考古</span>
+        </div>
+        <p class="lead">
+          一次像样的复刻，不能只靠“我记得它大概长这样”。我们现在能确认 Pickcat 的方式，是把还没彻底消失的证据一层一层叠起来。
+        </p>
+        <div class="grid-2">
+          <article class="card">
+            <strong>旧包资源仍在</strong>
+            <p>启动图、底部导航、登录素材、个人页头图和多套图标都还在，说明视觉语言并没有完全失传。</p>
+          </article>
+          <article class="card">
+            <strong>历史帖子曾经存在</strong>
+            <p>编号 `403032` 与 `419825` 的帖子如今已无法直接打开，但它们留下的九张截图已经被本地归档，成为最关键的界面证词。</p>
+          </article>
+          <article class="card">
+            <strong>接口目录仍可参考</strong>
+            <p>社区 API 文档站还能作为接口目录使用，不过内容已停止更新，因此我们只把它当线索，不把它当绝对真相。</p>
+          </article>
+          <article class="card">
+            <strong>现版原型已经能跑</strong>
+            <p>这让我们不只是展示一段历史，而是在今天重新拼出一条还能点击、还能跳转、还能被继续修复的体验链路。</p>
+          </article>
+        </div>
+        <div class="quote">
+          软件史里最难被保存的，从来不是图标，而是交互背后的秩序。我们做的事，就是把那种秩序重新找回来。
+        </div>
+      </section>
+
+      <section class="section dark">
+        <div class="section-head">
+          <h2>我们做了什么</h2>
+          <span>不是怀旧壁纸，而是可运行复刻</span>
+        </div>
+        <div class="grid-4">
+          <article class="step">
+            <strong>1. 提取资源</strong>
+            <p>从旧安装包中拆出图标、背景、按钮、登录图和底部导航素材，确认原始视觉语言。</p>
+          </article>
+          <article class="step">
+            <strong>2. 搜集截图</strong>
+            <p>围绕残留论坛帖子持续找图，把可辨认的页面形态按主题分类整理。</p>
+          </article>
+          <article class="step">
+            <strong>3. 对接接口</strong>
+            <p>把今天还能访问的社区数据重新组织，近似映射成更像 Pickcat 的内容流。</p>
+          </article>
+          <article class="step">
+            <strong>4. 做出原型</strong>
+            <p>前端优先复刻首页、喵圈、消息、我的、作品页和用户页，形成多端可运行版本。</p>
+          </article>
+        </div>
+        <div class="quote">
+          真正困难的地方，不是把一个界面画得像，而是让它重新拥有“可以被使用”的因果关系。
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>项目现在到哪一步了</h2>
+          <span>它已经接近成熟原型</span>
+        </div>
+        <div class="timeline">
+          <article class="timeline-item">
+            <strong>首页</strong>
+            <p>推荐、发现、关注三类 feed 已形成，论坛帖子流与作品流都能实际加载。</p>
+          </article>
+          <article class="timeline-item">
+            <strong>喵圈</strong>
+            <p>论坛板块被重新组织成移动端入口，可进入板块并分页继续读取帖子内容。</p>
+          </article>
+          <article class="timeline-item">
+            <strong>作品页</strong>
+            <p>已补充多类作品入口策略，并支持评论、收藏、点赞、作者跳转和更多作品推荐。</p>
+          </article>
+          <article class="timeline-item">
+            <strong>用户与消息</strong>
+            <p>用户资料、粉丝关注、消息跳转、帖子与作品的关联链路已经基本打通。</p>
+          </article>
+          <article class="timeline-item">
+            <strong>多端形态</strong>
+            <p>当前不仅有 Web 原型，也已形成 Windows 与 Android 调试产物，说明它不再停留在概念层。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="prototype-gallery">
+        <div class="section-head">
+          <h2>当前版本展示</h2>
+          <span>这不是概念图，而是当前可运行原型</span>
+        </div>
+        <p class="lead">
+          为了让这篇文章不只是怀旧叙事，我们另外截了 4 张现版页面。它们展示的不是“当年曾经怎样”，而是“今天我们已经把什么重新做出来了”。
+        </p>
+        <div class="gallery">
+          <figure class="figure-card">
+            <button class="figure-button" type="button" data-lightbox-src="./research_downloads/promo/pickcat-01-home.png">
+              <img src="./research_downloads/promo/pickcat-01-home.png" alt="Pickcat Reborn 首页推荐截图" />
+            </button>
+            <figcaption class="figure-copy">
+              <strong>首页推荐</strong>
+              <div class="caption">顶部品牌、推荐流和作品卡已经形成一个完整的移动社区首屏。</div>
+            </figcaption>
+          </figure>
+          <figure class="figure-card">
+            <button class="figure-button" type="button" data-lightbox-src="./research_downloads/promo/pickcat-02-discover.png">
+              <img src="./research_downloads/promo/pickcat-02-discover.png" alt="Pickcat Reborn 发现页截图" />
+            </button>
+            <figcaption class="figure-copy">
+              <strong>发现页</strong>
+              <div class="caption">作品封面、作者和数据层级已经被整理成更像 App 的内容分发页。</div>
+            </figcaption>
+          </figure>
+          <figure class="figure-card">
+            <button class="figure-button" type="button" data-lightbox-src="./research_downloads/promo/pickcat-03-circle.png">
+              <img src="./research_downloads/promo/pickcat-03-circle.png" alt="Pickcat Reborn 喵圈页截图" />
+            </button>
+            <figcaption class="figure-copy">
+              <strong>喵圈页</strong>
+              <div class="caption">论坛板块已经被重新包装成手机端入口，页面观感更接近当年的独立社区形态。</div>
+            </figcaption>
+          </figure>
+          <figure class="figure-card">
+            <button class="figure-button" type="button" data-lightbox-src="./research_downloads/promo/pickcat-04-work-detail.png">
+              <img src="./research_downloads/promo/pickcat-04-work-detail.png" alt="Pickcat Reborn 作品详情截图" />
+            </button>
+            <figcaption class="figure-copy">
+              <strong>作品详情</strong>
+              <div class="caption">作品封面、作者、数据、互动按钮和播放器入口，已经能说明这不是静态展板。</div>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" id="gallery">
+        <div class="section-head">
+          <h2>历史截图档案</h2>
+          <span>点击图片可放大</span>
+        </div>
+        <p class="lead">
+          这些截图来自当年的论坛帖子归档。原帖现在已经打不开，但它们留下的画面还在，足够让我们反推出 Pickcat 的页面结构、功能重点和产品气质。
+        </p>
+
+        <div class="gallery-group">
+          <div class="gallery-head">
+            <h3>首页与导航</h3>
+            <span>来自帖子 403032</span>
+          </div>
+          <div class="gallery">
+            <figure class="figure-card">
+              <button class="figure-button" type="button" data-lightbox-src="./research_downloads/recovered/403032_1.jpg">
+                <img src="./research_downloads/recovered/403032_1.jpg" alt="Pickcat 首页历史截图 1" />
+              </button>
+              <figcaption class="figure-copy">
+                <strong>首页参考 1</strong>
+                <div class="caption">底部导航、信息层级和移动端首页节奏已经很清楚。</div>
+              </figcaption>
+            </figure>
+            <figure class="figure-card">
+              <button class="figure-button" type="button" data-lightbox-src="./research_downloads/recovered/403032_2.jpg">
+                <img src="./research_downloads/recovered/403032_2.jpg" alt="Pickcat 首页历史截图 2" />
+              </button>
+              <figcaption class="figure-copy">
+                <strong>首页参考 2</strong>
+                <div class="caption">推荐流的卡片密度、顶部结构和整体视觉氛围都可据此继续贴近。</div>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="gallery-group">
+          <div class="gallery-head">
+            <h3>教程与使用技巧</h3>
+            <span>来自帖子 403032 / 419825</span>
+          </div>
+          <div class="gallery">
+            <figure class="figure-card">
+              <button class="figure-button" type="button" data-lightbox-src="./research_downloads/recovered/403032_3.png">
+                <img src="./research_downloads/recovered/403032_3.png" alt="Pickcat 教程截图 1" />
+              </button>
+              <figcaption class="figure-copy">
+                <strong>教程参考 1</strong>
+                <div class="caption">说明当年已有相当完整的移动端使用路径与引导方式。</div>
+              </figcaption>
+            </figure>
+            <figure class="figure-card">
+              <button class="figure-button" type="button" data-lightbox-src="./research_downloads/recovered/403032_4.png">
+                <img src="./research_downloads/recovered/403032_4.png" alt="Pickcat 教程截图 2" />
+              </button>
+              <figcaption class="figure-copy">
+                <strong>教程参考 2</strong>
+                <div class="caption">一些页面细部并不华丽，但非常明确地体现了 App 化的组织方式。</div>
+              </figcaption>
+            </figure>
+            <figure class="figure-card">
+              <button class="figure-button" type="button" data-lightbox-src="./research_downloads/recovered/419825_1.png">
+                <img src="./research_downloads/recovered/419825_1.png" alt="Pickcat 技巧截图 1" />
+              </button>
+              <figcaption class="figure-copy">
+                <strong>技巧参考 1</strong>
+                <div class="caption">这些技巧页像是时间留下的侧影，帮助我们反推出更多交互细节。</div>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="gallery-group">
+          <div class="gallery-head">
+            <h3>登录与个人页残留素材</h3>
+            <span>来自旧 APK 资源</span>
+          </div>
+          <div class="gallery">
+            <figure class="figure-card">
+              <button class="figure-button" type="button" data-lightbox-src="./public/assets/pickcat/bg_activity_login_account.png">
+                <img src="./public/assets/pickcat/bg_activity_login_account.png" alt="Pickcat 登录背景素材" />
+              </button>
+              <figcaption class="figure-copy">
+                <strong>登录背景素材</strong>
+                <div class="caption">历史截图文件里对应的登录页图片已经损坏，但旧包里的登录背景素材仍在，足够支撑页面气质复原。</div>
+              </figcaption>
+            </figure>
+            <figure class="figure-card">
+              <button class="figure-button" type="button" data-lightbox-src="./public/assets/bg_mine_header.png">
+                <img src="./public/assets/bg_mine_header.png" alt="Pickcat 个人页头图素材" />
+              </button>
+              <figcaption class="figure-copy">
+                <strong>个人页头图素材</strong>
+                <div class="caption">“我的”页面的大图仍在，这类看似边角的素材，往往最能把旧产品的气质重新拉回来。</div>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="gallery-group">
+          <div class="gallery-head">
+            <h3>更多细节</h3>
+            <span>来自帖子 419825</span>
+          </div>
+          <div class="gallery">
+            <figure class="figure-card">
+              <button class="figure-button" type="button" data-lightbox-src="./research_downloads/recovered/419825_2.png">
+                <img src="./research_downloads/recovered/419825_2.png" alt="Pickcat 细节截图 2" />
+              </button>
+              <figcaption class="figure-copy">
+                <strong>技巧参考 2</strong>
+                <div class="caption">更多关于页面结构和使用场景的细节，被这类截图间接保留了下来。</div>
+              </figcaption>
+            </figure>
+            <figure class="figure-card">
+              <button class="figure-button" type="button" data-lightbox-src="./research_downloads/recovered/419825_3.png">
+                <img src="./research_downloads/recovered/419825_3.png" alt="Pickcat 细节截图 3" />
+              </button>
+              <figcaption class="figure-copy">
+                <strong>技巧参考 3</strong>
+                <div class="caption">这些边角料并不起眼，但恰好是让一个旧产品重新变得可信的证词。</div>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section dark">
+        <div class="section-head">
+          <h2>这件事的意义</h2>
+          <span>关于软件、记忆和时间</span>
+        </div>
+        <div class="manifesto">
+          <p>互联网总给人一种错觉，好像所有东西都会永久存在。其实不是。很多产品消失时，连告别页都没有。</p>
+          <p>一个应用死去以后，最先丢失的不是功能，而是它曾经如何被人使用、被人喜欢、被人记住的那种节奏。</p>
+          <p>我们复刻 Pickcat，并不是为了假装时间没有流逝，而是为了证明：只要证据还在，体验就还能被重新拼回来。</p>
+          <p>技术在这里不是冷的。技术像一把刷子，把已经被灰尘覆盖的轮廓，一点一点重新扫出来。</p>
+          <p>如果说产品会死亡，那么复刻的意义就不是反抗死亡，而是给它留下一个还能被后来者理解的形状。</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>接下来还会继续做</h2>
+          <span>成熟，并不意味着结束</span>
+        </div>
+        <div class="grid-2">
+          <article class="card">
+            <strong>继续补更多历史证据</strong>
+            <p>只要还找得到更多截图、录屏、教程或老用户记忆，页面还原度就还能继续向前推。</p>
+          </article>
+          <article class="card">
+            <strong>继续抛光真实体验</strong>
+            <p>首页、发布页、消息页和用户页仍能更像当年的 Pickcat，而不是仅仅“长得像”。</p>
+          </article>
+        </div>
+        <p class="quote">
+          一个被遗忘的项目，不会因为没人提起就失去价值。它只是暂时沉到了看不见的地方。
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-card">
+        <h2>Pickcat Reborn</h2>
+        <p>
+          这不是一篇结束语，而是一份阶段性存档。至少现在，我们已经能说清楚：Pickcat 确实存在过，我们也确实把它重新带回了可运行的世界里。如果未来还能找到更多截图、录屏和记忆，这篇文章也会继续长下去。
+        </p>
+      </div>
+    </footer>
+
+    <div class="lightbox" data-lightbox>
+      <button type="button" aria-label="关闭预览" data-lightbox-close>&times;</button>
+      <img src="" alt="截图预览" data-lightbox-image />
+    </div>
+
+    <script>
+      const lightbox = document.querySelector("[data-lightbox]");
+      const lightboxImage = document.querySelector("[data-lightbox-image]");
+
+      document.querySelectorAll("[data-lightbox-src]").forEach((button) => {
+        button.addEventListener("click", () => {
+          lightboxImage.src = button.dataset.lightboxSrc;
+          lightbox.classList.add("open");
+        });
+      });
+
+      function closeLightbox() {
+        lightbox.classList.remove("open");
+        lightboxImage.src = "";
+      }
+
+      lightbox.addEventListener("click", (event) => {
+        if (event.target === lightbox || event.target.hasAttribute("data-lightbox-close")) {
+          closeLightbox();
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeLightbox();
+      });
+    </script>
+  </body>
+</html>
