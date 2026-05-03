@@ -15,6 +15,7 @@
 - 推送到 `main` 或 `master` 时自动执行
 - 自动安装依赖并运行 `pnpm run check`
 - 自动构建 Windows 便携版
+- 自动构建 Android Debug APK
 - 自动更新 GitHub 上的 `nightly` 预发布
 - 同时上传一份 workflow artifact
 

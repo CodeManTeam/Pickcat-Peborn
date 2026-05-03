@@ -312,7 +312,7 @@ const api = {
       body: { title, content }
     }),
   workList: (userId) =>
-    request(apiConfig.creation, "/creation-tools/v1/user/center/work-list", {
+    request(apiConfig.codemao, "/creation-tools/v1/user/center/work-list", {
       params: { user_id: userId, offset: 0, limit: 10 }
     }),
   userCenterWorks: (userId, limit = 10) =>
@@ -331,7 +331,7 @@ const api = {
   userBusinessTotal: (userId) =>
     request(apiConfig.codemao, "/nemo/v2/works/business/total", { params: { user_id: userId } }),
   userFans: (userId, limit = 12, offset = 0) =>
-    request(apiConfig.creation, "/creation-tools/v1/user/fans", { params: { user_id: userId, offset, limit } }),
+    request(apiConfig.codemao, "/creation-tools/v1/user/fans", { params: { user_id: userId, offset, limit } }),
   workDetail: (workId) => request(apiConfig.codemao, `/creation-tools/v1/works/${workId}`),
   nemoWorkDetail: (workId) => request(apiConfig.codemao, `/nemo/v2/works/${workId}`),
   workComments: (workId, offset = 0, limit = 10) =>
@@ -381,7 +381,7 @@ const api = {
     request(apiConfig.codemao, "/nemo/v3/work/dynamic", { auth: true, params: { offset, limit } }),
   recommendedUsers: () => request(apiConfig.codemao, "/web/users/recommended"),
   following: (userId, limit = 15, offset = 0) =>
-    request(apiConfig.creation, "/creation-tools/v1/user/followers", {
+    request(apiConfig.codemao, "/creation-tools/v1/user/followers", {
       params: { user_id: userId, offset, limit }
     }),
   followingLegacy: (userId, limit = 15) =>
@@ -813,6 +813,11 @@ function responseItems(result) {
   return [];
 }
 
+function responseTotal(result, fallback = 0) {
+  const total = result?.total ?? result?.data?.total ?? result?.count ?? result?.data?.count;
+  return Number.isFinite(Number(total)) ? Number(total) : fallback;
+}
+
 function createUserMiniCard(user, extra = "") {
   const card = document.createElement("button");
   card.type = "button";
@@ -1086,6 +1091,13 @@ function createPost(post) {
   $(".inline-work-preview", article)?.addEventListener("click", (event) => {
     event.stopPropagation();
     openWorkPreview(post.work);
+  });
+  $$(".image-strip img", article).forEach((img) => {
+    img.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openImageViewer(img.currentSrc || img.src, img.alt || "帖子图片");
+    });
   });
   return article;
 }
@@ -1832,6 +1844,7 @@ async function renderPostDetail(id) {
         if (detailUser.id) openUserReader(detailUser);
       })
     );
+    bindImageViewer($(".detail-content", root));
     bindDetailReplyEvents(id);
     await loadPostReplies(id);
   } catch (error) {
@@ -1953,6 +1966,7 @@ function createReplyCard(reply) {
       button.textContent = "发送";
     }
   });
+  bindImageViewer($(".reply-content", node));
   return node;
 }
 
@@ -2055,7 +2069,11 @@ async function renderMinePage() {
     state.mineFollowingUsers = followingUsers
       .map(normalizeUserListItem)
       .filter((item, index, list) => item.id && list.findIndex((user) => user.id === item.id) === index);
-    renderMineShell(mergedUser);
+    mergedUser.stats = {
+      ...(mergedUser.stats || {}),
+      followers: responseTotal(fanData, state.mineFollowers.length),
+      following: responseTotal(following, state.mineFollowingUsers.length)
+    };
     const publishedItems = published.data?.works || published.works || published.items || [];
     const centerItems = centerWorks.items || centerWorks.data?.works || [];
     const merged = [...publishedItems, ...centerItems];
@@ -2068,6 +2086,12 @@ async function renderMinePage() {
         seen.add(key);
         return true;
       });
+    mergedUser.stats = {
+      ...(mergedUser.stats || {}),
+      works: responseTotal(centerWorks, state.mineWorks.length || mergedUser.stats?.works || 0)
+    };
+    cacheUser(mergedUser);
+    renderMineShell(mergedUser);
     renderMineContent(mergedUser, { total: state.mineWorks.length, items: state.mineWorks });
   } catch (error) {
     root.replaceChildren(statusCard(`登录态不可用：${error.message}`), loginPrompt("重新登录"));
@@ -2189,6 +2213,40 @@ async function openWorkPreview(work) {
     openWorkReader(detail);
   });
   document.body.appendChild(overlay);
+}
+
+function openImageViewer(src, alt = "帖子图片") {
+  if (!src) return;
+  const safeSrc = escapeHtml(src);
+  const overlay = document.createElement("div");
+  overlay.className = "image-viewer-modal";
+  overlay.innerHTML = `
+    <button class="modal-backdrop" type="button" aria-label="关闭图片"></button>
+    <figure class="image-viewer-panel">
+      <img src="${safeSrc}" alt="${escapeHtml(alt)}" />
+      <figcaption>
+        <button type="button" class="image-viewer-close">关闭</button>
+        <a href="${safeSrc}" target="_blank" rel="noreferrer">打开原图</a>
+      </figcaption>
+    </figure>
+  `;
+  const close = () => overlay.remove();
+  $(".modal-backdrop", overlay).addEventListener("click", close);
+  $(".image-viewer-close", overlay).addEventListener("click", close);
+  document.body.appendChild(overlay);
+}
+
+function bindImageViewer(root) {
+  $$("img", root).forEach((img) => {
+    if (!img.src || img.dataset.imageViewerBound) return;
+    img.dataset.imageViewerBound = "true";
+    img.classList.add("clickable-image");
+    img.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openImageViewer(img.currentSrc || img.src, img.alt || "帖子图片");
+    });
+  });
 }
 
 function uniqueWorks(items = []) {
@@ -2620,6 +2678,15 @@ async function renderUserReader() {
       .map(normalizeUserListItem)
       .filter((item, index, list) => item.id && list.findIndex((userItem) => userItem.id === item.id) === index)
       .slice(0, 6);
+    user = cacheUser({
+      ...user,
+      stats: {
+        ...(user.stats || {}),
+        followers: responseTotal(fanData, fans.length),
+        following: responseTotal(following, followingUsers.length),
+        works: responseTotal(centerWorks, works.length || user.stats?.works || 0)
+      }
+    });
     if (works[0]?.id) {
       const detail = normalizeWork(await api.workDetail(works[0].id));
       user = cacheUser({
