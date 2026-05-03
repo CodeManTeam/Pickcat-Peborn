@@ -145,15 +145,25 @@ jobs:
           git push origin "refs/tags/$tag" --force
 
           shopt -s nullglob
-          files=(release-assets/*)
-          if [ ${#files[@]} -eq 0 ]; then
+          upload_files=()
+          for item in release-assets/*; do
+            if [ -d "$item" ]; then
+              archive="release-assets/$(basename "$item").tar.gz"
+              tar -czf "$archive" -C release-assets "$(basename "$item")"
+              upload_files+=("$archive")
+            elif [ -f "$item" ]; then
+              upload_files+=("$item")
+            fi
+          done
+
+          if [ ${#upload_files[@]} -eq 0 ]; then
             echo "No release assets found"
             exit 1
           fi
 
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release edit "$tag" --title "$title" --notes "$notes" --prerelease
-            gh release upload "$tag" "${files[@]}" --clobber
+            gh release upload "$tag" "${upload_files[@]}" --clobber
           else
-            gh release create "$tag" "${files[@]}" --title "$title" --notes "$notes" --prerelease
+            gh release create "$tag" "${upload_files[@]}" --title "$title" --notes "$notes" --prerelease
           fi
