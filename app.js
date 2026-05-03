@@ -1896,6 +1896,10 @@ function renderMineShell(user) {
       <h2>${name}</h2>
       <p>${desc}</p>
       <div class="profile-meta">${stats.map((item) => `<span>${item.label} ${item.value}</span>`).join("")}</div>
+      <div class="profile-actions">
+        <a class="secondary-link" href="pickcat-story.html" target="_blank" rel="noreferrer">项目文章</a>
+        <a class="secondary-link" href="pickcat-story.html#prototype-gallery" target="_blank" rel="noreferrer">宣传图集</a>
+      </div>
     </div>
   `;
 }
