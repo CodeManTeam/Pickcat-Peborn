@@ -1,5 +1,8 @@
 name: release-nightly
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches:
@@ -32,7 +35,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - name: Install dependencies
@@ -68,7 +71,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - name: Setup Java
@@ -88,6 +91,9 @@ jobs:
 
       - name: Sync Android assets
         run: pnpm run android:sync
+
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
 
       - name: Build Android APK
         working-directory: android
