@@ -1,0 +1,9 @@
+{
+  "env": "release",
+  "api": {
+    "host": "https://api.codemao.cn",
+    "port": "443"
+  },
+  "player_path": "https://nemo.codemao.cn/work_detail/",
+  "user_db_version": "1"
+}

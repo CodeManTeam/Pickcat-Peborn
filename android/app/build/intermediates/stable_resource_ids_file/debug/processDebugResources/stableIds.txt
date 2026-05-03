@@ -1,0 +1,1 @@
+cn.pickcat.reborn:style/AppTheme = 0x7f010000

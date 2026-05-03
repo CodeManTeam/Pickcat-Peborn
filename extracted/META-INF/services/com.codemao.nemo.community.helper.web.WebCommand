@@ -1,0 +1,3 @@
+com.codemao.nemo.community.helper.web.OpenIDECommand
+com.codemao.nemo.community.helper.web.ShowWindowCommand
+com.codemao.nemo.community.helper.web.StartActivityCommand

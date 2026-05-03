@@ -1,0 +1,48 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="cn.pickcat.reborn"
+4    android:versionCode="1"
+5    android:versionName="0.1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="23"
+9        android:targetSdkVersion="35" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:3:5-67
+11-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:3:22-64
+12
+13    <application
+13-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:5:5-19:19
+14        android:allowBackup="true"
+14-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:6:9-35
+15        android:debuggable="true"
+16        android:extractNativeLibs="false"
+17        android:label="Pickcat Reborn"
+17-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:7:9-39
+18        android:theme="@style/AppTheme"
+18-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:8:9-40
+19        android:usesCleartextTraffic="true" >
+19-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:9:9-44
+20        <activity
+20-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:10:9-18:20
+21            android:name="cn.pickcat.reborn.MainActivity"
+21-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:11:13-41
+22            android:configChanges="keyboardHidden|orientation|screenSize"
+22-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:12:13-74
+23            android:exported="true" >
+23-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:13:13-36
+24            <intent-filter>
+24-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:14:13-17:29
+25                <action android:name="android.intent.action.MAIN" />
+25-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:15:17-69
+25-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:15:25-66
+26
+27                <category android:name="android.intent.category.LAUNCHER" />
+27-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:16:17-77
+27-->D:\VoxelAI\CodemaoReborn\android\app\src\main\AndroidManifest.xml:16:27-74
+28            </intent-filter>
+29        </activity>
+30    </application>
+31
+32</manifest>

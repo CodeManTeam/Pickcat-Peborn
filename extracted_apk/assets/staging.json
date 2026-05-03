@@ -1,0 +1,9 @@
+{
+  "env": "staging",
+  "api": {
+    "host": "https://backend-test.codemao.cn",
+    "port": "443"
+  },
+  "player_path": "https://staging-nemo.codemao.cn/work_detail/",
+  "user_db_version": "1"
+}

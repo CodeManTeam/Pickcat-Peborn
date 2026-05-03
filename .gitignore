@@ -1,0 +1,32 @@
+node_modules/
+
+# Build outputs
+release/
+dist/
+
+# Runtime logs
+*.log
+server.err.log
+server.log
+crash_log.txt
+full_log.txt
+
+# Local SDK / caches
+android-sdk/
+
+# Reverse engineering temp files
+*.i64
+*.id0
+*.id1
+*.nam
+*.til
+*.apk
+
+# Python caches / packages
+__pycache__/
+*.pyc
+*.whl
+
+# OS / editor
+.DS_Store
+Thumbs.db

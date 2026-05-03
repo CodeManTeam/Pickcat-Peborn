@@ -1,0 +1,594 @@
+[
+  {
+    "id": 3101,
+    "name": "乡村",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_101.mp3"
+    ]
+  },
+  {
+    "id": 3102,
+    "name": "危险临近",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_102.mp3"
+    ]
+  },
+  {
+    "id": 3103,
+    "name": "希望",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_103.mp3"
+    ]
+  },
+  {
+    "id": 3104,
+    "name": "悠闲",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_104.mp3"
+    ]
+  },
+  {
+    "id": 3105,
+    "name": "神秘",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_105.mp3"
+    ]
+  },
+  {
+    "id": 3106,
+    "name": "精灵聚会",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_106.mp3"
+    ]
+  },
+  {
+    "id": 3107,
+    "name": "西部小牛仔",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_107.mp3"
+    ]
+  },
+  {
+    "id": 3108,
+    "name": "调皮",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_108.mp3"
+    ]
+  },
+  {
+    "id": 3109,
+    "name": "踏青",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_109.mp3"
+    ]
+  },
+  {
+    "id": 3110,
+    "name": "鬼马机灵",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_110.mp3"
+    ]
+  },
+  {
+    "id": 3111,
+    "name": "八音盒",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_111.mp3"
+    ]
+  },
+  {
+    "id": 3112,
+    "name": "感动时",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_112.mp3"
+    ]
+  },
+  {
+    "id": 3113,
+    "name": "像素风音乐",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_113.mp3"
+    ]
+  },
+  {
+    "id": 3114,
+    "name": "像素风音乐2",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_114.mp3"
+    ]
+  },
+  {
+    "id": 3115,
+    "name": "迪斯科",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_115.mp3"
+    ]
+  },
+  {
+    "id": 3116,
+    "name": "欢乐爵士",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_116.mp3"
+    ]
+  },
+  {
+    "id": 3117,
+    "name": "吉他钢琴鼓",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_117.mp3"
+    ]
+  },
+  {
+    "id": 3118,
+    "name": "派对",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_118.mp3"
+    ]
+  },
+  {
+    "id": 3119,
+    "name": "春天的萌芽",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_119.mp3"
+    ]
+  },
+  {
+    "id": 3120,
+    "name": "清凉的夏夜",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_120.mp3"
+    ]
+  },
+  {
+    "id": 3121,
+    "name": "晚安",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_121.mp3"
+    ]
+  },
+  {
+    "id": 3122,
+    "name": "小星星",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_122.mp3"
+    ]
+  },
+  {
+    "id": 3123,
+    "name": "仰望星空",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_123.mp3"
+    ]
+  },
+  {
+    "id": 3124,
+    "name": "悠远的森林",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_124.mp3"
+    ]
+  },
+  {
+    "id": 3125,
+    "name": "戏曲",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_125.mp3"
+    ]
+  },
+  {
+    "id": 3126,
+    "name": "童年",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_126.mp3"
+    ]
+  },
+  {
+    "id": 3127,
+    "name": "异域风情",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_127.mp3"
+    ]
+  },
+  {
+    "id": 3128,
+    "name": "rap",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_128.mp3"
+    ]
+  },
+  {
+    "id": 3129,
+    "name": "圣诞乐曲1",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_129.mp3"
+    ]
+  },
+  {
+    "id": 3130,
+    "name": "圣诞乐曲2",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_130.mp3"
+    ]
+  },
+  {
+    "id": 3131,
+    "name": "奇妙旅行",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_131.mp3"
+    ]
+  },
+  {
+    "id": 3132,
+    "name": "滑稽幽默",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_132.mp3"
+    ]
+  },
+  {
+    "id": 3133,
+    "name": "欢快马戏团",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_133.mp3"
+    ]
+  },
+  {
+    "id": 3134,
+    "name": "悠哉小调",
+    "category_id": 1,
+    "url": [
+      "res/raw/s_134.mp3"
+    ]
+  },
+  {
+    "id": 3201,
+    "name": "上发条声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_201.mp3"
+    ]
+  },
+  {
+    "id": 3202,
+    "name": "倒水声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_202.mp3"
+    ]
+  },
+  {
+    "id": 3203,
+    "name": "咚",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_203.mp3"
+    ]
+  },
+  {
+    "id": 3204,
+    "name": "夜昆虫鸣叫",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_204.mp3"
+    ]
+  },
+  {
+    "id": 3205,
+    "name": "开场",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_205.mp3"
+    ]
+  },
+  {
+    "id": 3206,
+    "name": "弹簧",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_206.mp3"
+    ]
+  },
+  {
+    "id": 3207,
+    "name": "成功",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_207.mp3"
+    ]
+  },
+  {
+    "id": 3208,
+    "name": "打字声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_208.mp3"
+    ]
+  },
+  {
+    "id": 3209,
+    "name": "打雷声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_209.mp3"
+    ]
+  },
+  {
+    "id": 3210,
+    "name": "拍照咔擦声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_210.mp3"
+    ]
+  },
+  {
+    "id": 3211,
+    "name": "摇骰子",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_211.mp3"
+    ]
+  },
+  {
+    "id": 3212,
+    "name": "时空穿梭",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_212.mp3"
+    ]
+  },
+  {
+    "id": 3213,
+    "name": "欢快",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_213.mp3"
+    ]
+  },
+  {
+    "id": 3214,
+    "name": "水滴",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_214.mp3"
+    ]
+  },
+  {
+    "id": 3215,
+    "name": "泡泡声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_215.mp3"
+    ]
+  },
+  {
+    "id": 3216,
+    "name": "溜走",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_216.mp3"
+    ]
+  },
+  {
+    "id": 3217,
+    "name": "爆炸声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_217.mp3"
+    ]
+  },
+  {
+    "id": 3218,
+    "name": "狗叫",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_218.wav"
+    ]
+  },
+  {
+    "id": 3219,
+    "name": "猫叫",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_219.wav"
+    ]
+  },
+  {
+    "id": 3220,
+    "name": "玻璃破碎",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_220.mp3"
+    ]
+  },
+  {
+    "id": 3221,
+    "name": "直升机",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_221.mp3"
+    ]
+  },
+  {
+    "id": 3222,
+    "name": "礼乐鼓",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_222.mp3"
+    ]
+  },
+  {
+    "id": 3223,
+    "name": "神秘",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_223.mp3"
+    ]
+  },
+  {
+    "id": 3224,
+    "name": "神秘2",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_224.mp3"
+    ]
+  },
+  {
+    "id": 3225,
+    "name": "笑声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_225.mp3"
+    ]
+  },
+  {
+    "id": 3226,
+    "name": "结果",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_226.mp3"
+    ]
+  },
+  {
+    "id": 3227,
+    "name": "胜利",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_227.mp3"
+    ]
+  },
+  {
+    "id": 3228,
+    "name": "能量碰撞",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_228.mp3"
+    ]
+  },
+  {
+    "id": 3229,
+    "name": "碰撞",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_229.wav"
+    ]
+  },
+  {
+    "id": 3230,
+    "name": "跳",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_230.mp3"
+    ]
+  },
+  {
+    "id": 3231,
+    "name": "闪亮01",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_231.mp3"
+    ]
+  },
+  {
+    "id": 3232,
+    "name": "闪亮02",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_232.wav"
+    ]
+  },
+  {
+    "id": 3233,
+    "name": "闪亮03",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_233.mp3"
+    ]
+  },
+  {
+    "id": 3234,
+    "name": "闪亮04",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_234.mp3"
+    ]
+  },
+  {
+    "id": 3235,
+    "name": "闪亮05",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_235.mp3"
+    ]
+  },
+  {
+    "id": 3236,
+    "name": "青蛙呱叫声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_236.mp3"
+    ]
+  },
+  {
+    "id": 3237,
+    "name": "鞭炮声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_237.mp3"
+    ]
+  },
+  {
+    "id": 3238,
+    "name": "鸟鸣",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_238.mp3"
+    ]
+  },
+  {
+    "id": 3239,
+    "name": "圣诞铃声",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_239.mp3"
+    ]
+  },
+  {
+    "id": 3240,
+    "name": "上课铃",
+    "category_id": 2,
+    "url": [
+      "res/raw/s_240.mp3"
+    ]
+  }
+]
