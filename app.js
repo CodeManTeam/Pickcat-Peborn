@@ -25,6 +25,7 @@ const ASSETS = {
 const apiConfig = {
   codemao: location.protocol === "file:" ? "https://api.codemao.cn" : "/proxy/codemao",
   creation: location.protocol === "file:" ? "https://api-creation.codemao.cn" : "/proxy/creation",
+  openService: location.protocol === "file:" ? "https://open-service.codemao.cn" : "/proxy/open-service",
   pid: "65edCTyg"
 };
 
@@ -425,7 +426,7 @@ const api = {
     }),
   currentTime: () => request(apiConfig.codemao, "/coconut/clouddb/currentTime"),
   captchaRule: (identity, timestamp) =>
-    request("/proxy/open-service", "/captcha/rule/v3", {
+    request(apiConfig.openService, "/captcha/rule/v3", {
       method: "POST",
       body: { identity, pid: apiConfig.pid, timestamp }
     }),
@@ -570,8 +571,10 @@ function proxyMediaUrl(value = "") {
     if (target.origin === location.origin) return target.toString();
     const host = target.hostname.toLowerCase();
     const shouldProxy =
-      host === "cdn-community.codemao.cn" ||
-      host === "cdn-community.bcmcdn.com";
+      host.endsWith(".codemao.cn") ||
+      host === "codemao.cn" ||
+      host.endsWith(".bcmcdn.com") ||
+      host === "bcmcdn.com";
     if (!shouldProxy) return target.toString();
     return `${location.origin}/proxy/media?url=${encodeURIComponent(target.toString())}`;
   } catch {
@@ -2048,7 +2051,8 @@ function updateTopbar(view) {
   title.setAttribute("tabindex", view === "home" ? "0" : "-1");
   title.setAttribute("aria-label", view === "home" ? "回到顶部" : titles[view]);
   syncHomeTopbarVisibility({ force: true });
-  $("[data-back]").classList.toggle("hidden", !["search", "publish", "detail", "work", "user", "tool", "login"].includes(view));
+  $("[data-back]").classList.add("hidden");
+  $(".bottom-nav")?.classList.toggle("hidden", isSecondaryView(view));
   renderTopActions(view);
 }
 
@@ -3637,7 +3641,8 @@ async function submitLogin(event) {
     } catch {
       status.textContent = "v1 登录未通过，正在尝试安全登录...";
       const time = await api.currentTime();
-      const ticketResult = await api.captchaRule(identity, time.data);
+      const timestamp = time?.data ?? time;
+      const ticketResult = await api.captchaRule(identity, timestamp);
       loginResult = await api.loginV2(identity, password, ticketResult.ticket);
       method = "password_v2";
     }
@@ -3654,10 +3659,11 @@ async function submitLogin(event) {
       if (window.PickcatAndroid?.clearLogin) window.PickcatAndroid.clearLogin();
     }
     saveSessionToStorage(remember);
+    syncPlayerAuth();
     status.textContent = `登录成功（${method}），正在进入我的页面。`;
     navigateLocal("mine");
   } catch (error) {
-    status.textContent = `登录失败：${error.message}`;
+    status.textContent = `登录失败（${method}）：${error.message}`;
   } finally {
     if (submitButton) {
       submitButton.disabled = false;
