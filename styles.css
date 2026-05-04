@@ -2827,6 +2827,29 @@ body.player-landscape .work-reader-cover {
   background: #000;
 }
 
+.player-back-btn {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 50;
+  border: 0;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.player-back-btn img {
+  width: 24px;
+  height: 24px;
+  filter: invert(1);
+}
+
 .nav-item,
 .create-btn {
   border: 0;

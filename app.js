@@ -800,6 +800,22 @@ function setNativePlayerMode(active) {
     // Native bridge is only available inside the Android wrapper.
   }
   document.body.classList.toggle("player-landscape", Boolean(active));
+  const stage = $("[data-player-stage]");
+  if (!stage) return;
+  const existingBtn = $(".player-back-btn", stage);
+  if (active && !existingBtn) {
+    const btn = document.createElement("button");
+    btn.className = "player-back-btn";
+    btn.setAttribute("aria-label", "退出全屏");
+    btn.innerHTML = `<img src="public/assets/pickcat/imoji_back.png" alt="" />`;
+    btn.addEventListener("click", () => {
+      setNativePlayerMode(false);
+      renderWorkReader();
+    });
+    stage.appendChild(btn);
+  } else if (!active && existingBtn) {
+    existingBtn.remove();
+  }
 }
 
 function nativeBack() {
@@ -3812,6 +3828,18 @@ async function init() {
   await loadCircleData();
   await loadHomeData();
   syncHomeTopbarVisibility({ force: true });
+  window.matchMedia("(orientation: landscape)").addEventListener("change", (e) => {
+    if (state.currentView !== "work") return;
+    if (e.matches) {
+      const startBtn = $("[data-start-player]");
+      if (startBtn) startBtn.click();
+    } else {
+      if (document.body.classList.contains("player-landscape")) {
+        setNativePlayerMode(false);
+        renderWorkReader();
+      }
+    }
+  });
 }
 
 init();
