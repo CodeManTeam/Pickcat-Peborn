@@ -112,7 +112,7 @@ body.native-wrapper.home-viewing .app {
   left: 50%;
   z-index: 10;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 8px;
   width: var(--shell-width);
@@ -168,13 +168,9 @@ body.native-wrapper .topbar {
 }
 
 .home-topbar .brand {
-  grid-column: 1 / 3;
+  grid-column: 1 / 2;
   grid-row: 1;
   justify-self: start;
-}
-
-.topbar:not(.home-topbar) {
-  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .topbar:not(.home-topbar) .brand {
@@ -185,7 +181,7 @@ body.native-wrapper .topbar {
 }
 
 .topbar-tabs {
-  grid-column: 1 / 4;
+  grid-column: 1 / 3;
   grid-row: 2;
   align-self: end;
   justify-self: start;
@@ -194,7 +190,7 @@ body.native-wrapper .topbar {
 }
 
 .home-topbar .top-actions {
-  grid-column: 3;
+  grid-column: 2;
   grid-row: 1;
   align-self: center;
 }
@@ -233,10 +229,6 @@ body.native-wrapper .topbar {
   background: rgba(255, 255, 255, 0.8);
 }
 
-.ghost {
-  opacity: 0.8;
-}
-
 .hidden {
   display: none !important;
 }
@@ -250,11 +242,6 @@ body.native-wrapper .topbar {
 .menu-img {
   width: 19px;
   height: 19px;
-}
-
-.back-img {
-  width: 24px;
-  height: 24px;
 }
 
 .tabs,

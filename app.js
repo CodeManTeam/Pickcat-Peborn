@@ -18,7 +18,6 @@ const ASSETS = {
   nemo: "public/assets/pickcat/nemo.png",
   kitten: "public/assets/pickcat/kitten.png",
   moreMenu: "public/assets/pickcat/ic_more_mine_black.png",
-  back: "public/assets/pickcat/imoji_back.png",
   settings: "public/assets/pickcat/imoji_menu_settings.png"
 };
 
@@ -2051,7 +2050,6 @@ function updateTopbar(view) {
   title.setAttribute("tabindex", view === "home" ? "0" : "-1");
   title.setAttribute("aria-label", view === "home" ? "回到顶部" : titles[view]);
   syncHomeTopbarVisibility({ force: true });
-  $("[data-back]").classList.add("hidden");
   $(".bottom-nav")?.classList.toggle("hidden", isSecondaryView(view));
   renderTopActions(view);
 }
@@ -3638,13 +3636,17 @@ async function submitLogin(event) {
 
     try {
       loginResult = await api.loginV1(identity, password);
-    } catch {
-      status.textContent = "v1 登录未通过，正在尝试安全登录...";
-      const time = await api.currentTime();
-      const timestamp = time?.data ?? time;
-      const ticketResult = await api.captchaRule(identity, timestamp);
-      loginResult = await api.loginV2(identity, password, ticketResult.ticket);
+    } catch (v1Error) {
       method = "password_v2";
+      status.textContent = "v1 登录未通过，正在尝试安全登录...";
+      try {
+        const time = await api.currentTime();
+        const timestamp = time?.data ?? time;
+        const ticketResult = await api.captchaRule(identity, timestamp);
+        loginResult = await api.loginV2(identity, password, ticketResult.ticket);
+      } catch (v2Error) {
+        throw new Error(`安全登录失败：${v2Error.message}`);
+      }
     }
 
     const result = loginResult.data;
@@ -3696,7 +3698,6 @@ function normalizeStaticLabels() {
     tab.textContent = feedLabels[tab.dataset.feedTab] || tab.textContent;
   });
   $("[data-home-tabs]")?.setAttribute("aria-label", "首页分类");
-  $("[data-back]")?.setAttribute("aria-label", "返回");
   $("[data-search]")?.setAttribute("aria-label", "搜索");
 }
 
@@ -3748,9 +3749,6 @@ function bindEvents() {
   });
   $("[data-search]").addEventListener("click", () => navigateLocal("search"));
   $("[data-cancel-search]").addEventListener("click", () => navigateLocal("home"));
-  $("[data-back]").addEventListener("click", () => {
-    nativeBack();
-  });
   $("[data-title]").addEventListener("click", () => {
     if (state.currentView === "home") scrollToPageTop();
   });
