@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="36px" height="36px" viewBox="0 0 36 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icn_block_microbit_output_act</title>
+    <g id="硬件连接" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="积木图标" transform="translate(-103.000000, -41.000000)">
+            <g id="icn/36/积木类别/microbit_output" transform="translate(103.000000, 41.000000)">
+                <rect id="Rectangle-23" x="0" y="0" width="36" height="36"></rect>
+                <g id="编组-7" transform="translate(3.000000, 8.000000)">
+                    <rect id="矩形" stroke="#FFFFFF" stroke-width="4" x="2" y="2" width="26" height="16" rx="8"></rect>
+                    <circle id="椭圆形" fill="#FFFFFF" cx="9.5" cy="10" r="2.5"></circle>
+                    <circle id="椭圆形" fill="#FFFFFF" cx="20.5" cy="10" r="2.5"></circle>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

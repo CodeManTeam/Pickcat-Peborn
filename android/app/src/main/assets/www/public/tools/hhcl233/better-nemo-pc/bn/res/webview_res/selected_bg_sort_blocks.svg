@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="46px" height="46px" viewBox="0 0 46 46" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 48.1 (47250) - http://www.bohemiancoding.com/sketch -->
+    <title>8</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="19" cy="19" r="19"></circle>
+        <filter x="-15.8%" y="-15.8%" width="131.6%" height="131.6%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.5 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Nemo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(-496.000000, -157.000000)">
+        <g id="btn_cleanup" transform="translate(500.000000, 161.000000)">
+            <g id="Path4">
+                <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                <use fill="#FB8C00" fill-rule="evenodd" xlink:href="#path-1"></use>
+            </g>
+            <path d="M11.1862745,12.45 C10.7670507,12.45 10.45,12.7266988 10.45,13.0352941 L10.45,14.9647059 C10.45,15.2733012 10.7670507,15.55 11.1862745,15.55 L19.8137255,15.55 C20.2329493,15.55 20.55,15.2733012 20.55,14.9647059 L20.55,13.0352941 C20.55,12.7266988 20.2329493,12.45 19.8137255,12.45 L11.1862745,12.45 Z M11.1323529,17.45 C10.7469459,17.45 10.45,17.7214934 10.45,18.0352941 L10.45,19.9647059 C10.45,20.2785066 10.7469459,20.55 11.1323529,20.55 L22.8676471,20.55 C23.2530541,20.55 23.55,20.2785066 23.55,19.9647059 L23.55,18.0352941 C23.55,17.7214934 23.2530541,17.45 22.8676471,17.45 L11.1323529,17.45 Z M11.1647059,23.45 C10.7589512,23.45 10.45,23.7246233 10.45,24.0352941 L10.45,25.9647059 C10.45,26.2753767 10.7589512,26.55 11.1647059,26.55 L26.8352941,26.55 C27.2410488,26.55 27.55,26.2753767 27.55,25.9647059 L27.55,24.0352941 C27.55,23.7246233 27.2410488,23.45 26.8352941,23.45 L11.1647059,23.45 Z" id="Combined-Shape" stroke="#FFFFFF" stroke-width="0.9"></path>
+        </g>
+    </g>
+</svg>

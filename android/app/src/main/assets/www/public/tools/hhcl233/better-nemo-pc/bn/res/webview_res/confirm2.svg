@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="52px" height="52px" viewBox="0 0 52 52" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 4</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-1464.000000, -769.000000)">
+            <g id="Group-4" transform="translate(1465.000000, 770.000000)">
+                <g id="Next">
+                    <circle id="Oval-6" stroke="#763A3C" stroke-width="5" fill="#FFC941" cx="25" cy="25" r="23"></circle>
+                    <g id="ic_check">
+                        <polygon id="Shape" points="0 0 50 0 50 50 0 50"></polygon>
+                    </g>
+                </g>
+                <path d="M22.5838523,28.8290441 C22.1916831,29.2212133 21.5516396,29.2161239 21.1648374,28.8282678 L16.8943652,24.5461594 C16.5028341,24.1535614 15.8629669,24.1577664 15.4819203,24.538813 L14.7035151,25.3172182 C14.3149744,25.7057588 14.3190398,26.339773 14.7001198,26.7208531 L21.1891469,33.2098802 C21.5758124,33.5965457 22.2101658,33.5887627 22.5987155,33.1998036 L35.888883,19.8956317 C36.2807008,19.5034011 36.2758633,18.8629669 35.8948167,18.4819203 L35.1164115,17.7035151 C34.7278709,17.3149744 34.1029387,17.3099577 33.7028113,17.7100851 L22.5838523,28.8290441 Z" id="Path" stroke="#763A3C" stroke-width="2" fill="#763A3C" stroke-linecap="round" stroke-linejoin="round"></path>
+            </g>
+            <path d="M1471.62051,796.055016 C1481.80161,796.055016 1490.05502,787.801607 1490.05502,777.62051" id="Oval-6-Copy" stroke-opacity="0.5" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="bevel" transform="translate(1480.837763, 786.837763) rotate(176.000000) translate(-1480.837763, -786.837763) "></path>
+        </g>
+    </g>
+</svg>
