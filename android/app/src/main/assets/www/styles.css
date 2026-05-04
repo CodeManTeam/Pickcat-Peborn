@@ -2484,6 +2484,37 @@ body.tool-fullscreen .tool-fullscreen-btn {
 body.tool-fullscreen .tool-fullscreen-btn .fs-expand { display: none; }
 body.tool-fullscreen .tool-fullscreen-btn .fs-shrink { display: block; }
 
+.work-fullscreen-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 25;
+  border: 0;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.work-fullscreen-btn svg {
+  stroke: #fff;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.work-fullscreen-btn .fs-shrink { display: none; }
+.work-fullscreen-btn .fs-expand { display: block; }
+
+body.player-landscape .work-fullscreen-btn { display: none; }
+
 .user-reader-hero {
   position: relative;
   display: grid;
