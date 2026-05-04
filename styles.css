@@ -1882,10 +1882,12 @@ body.native-wrapper .topbar {
 }
 
 .work-editor-links a,
+.work-editor-links button,
 .work-editor-links span {
   display: grid;
   place-items: center;
   min-height: 38px;
+  border: 0;
   border-radius: 999px;
   background: var(--blue-weak);
   color: var(--blue);
@@ -2166,6 +2168,7 @@ body.native-wrapper .topbar {
   border-radius: 8px;
   padding: 11px;
   color: var(--ink);
+  text-align: left;
   text-decoration: none;
   background: #f8fafc;
   scroll-snap-align: start;
@@ -2239,6 +2242,96 @@ body.native-wrapper .topbar {
 .user-reader {
   margin: 0 -18px;
   background: #fff;
+}
+
+.tool-runner {
+  display: grid;
+  gap: 12px;
+  min-height: calc(var(--viewport-height) - 92px);
+  padding-top: 8px;
+}
+
+.tool-runner-head {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.tool-runner-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  background: var(--blue-weak);
+}
+
+.tool-runner-icon img {
+  max-width: 36px;
+  max-height: 36px;
+  object-fit: contain;
+}
+
+.tool-runner-head em {
+  color: var(--blue);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.tool-runner-head h2 {
+  margin: 2px 0;
+  font-size: 20px;
+}
+
+.tool-runner-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.tool-runner-frame-wrap {
+  position: relative;
+  min-height: calc(var(--viewport-height) - 184px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.tool-runner-frame {
+  display: block;
+  width: 100%;
+  height: calc(var(--viewport-height) - 184px);
+  min-height: 620px;
+  border: 0;
+  background: #fff;
+}
+
+.tool-runner-tip {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  gap: 2px;
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #596273;
+  font-size: 12px;
+  box-shadow: 0 8px 22px rgba(20, 40, 80, 0.14);
+  pointer-events: none;
+}
+
+.tool-runner.tool-loaded .tool-runner-tip {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .user-reader-hero {
@@ -2623,6 +2716,10 @@ body.native-wrapper .topbar {
   border-top: 1px solid var(--line);
   transform: translateX(-50%);
   backdrop-filter: blur(18px);
+}
+
+.bottom-nav.hidden {
+  display: none;
 }
 
 body.native-wrapper .bottom-nav {

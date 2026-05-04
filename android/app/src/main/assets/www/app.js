@@ -30,7 +30,7 @@ const apiConfig = {
 
 const feedPageSize = 8;
 const userListPreviewSize = 6;
-const stackedViews = new Set(["search", "publish", "detail", "work", "user", "login"]);
+const stackedViews = new Set(["search", "publish", "detail", "work", "user", "tool", "login"]);
 
 const oldsquawLinks = {
   org: "https://gitee.com/oldsquaw",
@@ -43,38 +43,80 @@ const oldsquawLinks = {
 
 const oldsquawTools = [
   {
+    id: "better-nemo",
     name: "BetterNemo",
     tag: "Nemo 拓展",
     desc: "更强的 Nemo 编辑器与播放器移植，适合作品再创作和移动端打开。",
-    url: oldsquawLinks.betterNemo,
+    url: "https://oldsquaw.rth1.xyz/bn-launcher.html",
+    fallbackUrl: oldsquawLinks.betterNemo,
     icon: ASSETS.nemo,
     tone: "blue"
   },
   {
+    id: "coco-pro",
     name: "CoCo Pro",
     tag: "CoCo 魔改",
     desc: "集成界面美化、宽屏适配、控件商城、AI CoCo 鸭和协作能力。",
-    url: oldsquawLinks.cocoPro,
+    url: "https://gitee.com/oldsquaw/coco/raw/master/index.html",
+    fallbackUrl: oldsquawLinks.cocoPro,
     icon: ASSETS.appLogo,
     tone: "green"
   },
   {
+    id: "kn-oldsquaw",
     name: "KN-Oldsquaw",
     tag: "KittenN 镜像",
     desc: "KittenN 镜像和 Oldsquaw 拓展项目，补足 KN 作品打开入口。",
-    url: oldsquawLinks.kn,
+    url: "https://kn.codemao.cn/",
+    fallbackUrl: oldsquawLinks.kn,
     icon: ASSETS.kitten,
     tone: "yellow"
   },
   {
+    id: "widget-editor",
     name: "控件编辑器",
     tag: "AI 控件",
     desc: "面向 CoCo 自定义控件的编辑入口，承接控件、扩展和教程投稿。",
-    url: oldsquawLinks.widgetEditor,
+    url: "https://gitee.com/oldsquaw/oldsquaw-widget-editor/raw/master/1.0.0.html",
+    fallbackUrl: oldsquawLinks.widgetEditor,
     icon: ASSETS.photo,
     tone: "pink"
   }
 ];
+
+const toolRegistry = {
+  nemo: {
+    id: "nemo",
+    name: "Nemo",
+    tag: "官方创作",
+    desc: "在 Pickcat 内打开 Nemo 创作环境。",
+    url: "https://nemo.codemao.cn/",
+    fallbackUrl: "https://nemo.codemao.cn/",
+    icon: ASSETS.nemo,
+    tone: "blue"
+  },
+  kitten: {
+    id: "kitten",
+    name: "Kitten",
+    tag: "官方创作",
+    desc: "在 Pickcat 内打开 Kitten 编辑器。",
+    url: "https://kitten4.codemao.cn/",
+    fallbackUrl: "https://kitten4.codemao.cn/",
+    icon: ASSETS.kitten,
+    tone: "green"
+  },
+  kn: {
+    id: "kn",
+    name: "KittenN",
+    tag: "官方创作",
+    desc: "在 Pickcat 内打开 KittenN 创作环境。",
+    url: "https://kn.codemao.cn/",
+    fallbackUrl: "https://kn.codemao.cn/",
+    icon: ASSETS.kitten,
+    tone: "yellow"
+  },
+  ...Object.fromEntries(oldsquawTools.map((tool) => [tool.id, tool]))
+};
 
 const circleIconMap = {
   "3": ASSETS.codeIsland,
@@ -130,6 +172,7 @@ const state = {
   activeWorkId: "",
   activeUserId: "",
   activePostId: "",
+  activeToolId: "",
   pendingPostReplyId: "",
   pendingWorkCommentId: "",
   activeCircleBoardId: "",
@@ -683,10 +726,10 @@ function engineMeta(work = {}, id = "") {
 function editorEntries(work = {}) {
   const meta = engineMeta(work, work.id);
   const partnerEntries = [
-    meta.code === "nemo" ? { label: "BetterNemo", url: oldsquawLinks.betterNemo, disabled: false } : null,
-    meta.code === "kittenN" ? { label: "KN-Oldsquaw", url: oldsquawLinks.kn, disabled: false } : null,
-    { label: "CoCo Pro", url: oldsquawLinks.cocoPro, disabled: false },
-    { label: "控件编辑器", url: oldsquawLinks.widgetEditor, disabled: false }
+    meta.code === "nemo" ? { label: "BetterNemo", tool: "better-nemo", disabled: false } : null,
+    meta.code === "kittenN" ? { label: "KN-Oldsquaw", tool: "kn-oldsquaw", disabled: false } : null,
+    { label: "CoCo Pro", tool: "coco-pro", disabled: false },
+    { label: "控件编辑器", tool: "widget-editor", disabled: false }
   ].filter(Boolean);
   return [
     { label: `${meta.label} 播放器`, url: work.playerUrls?.[0] || meta.workUrl || "", disabled: !(work.playerUrls?.[0] || meta.workUrl) },
@@ -713,7 +756,7 @@ function nativeBack() {
     renderWorkReader();
     return true;
   }
-  if (["search", "publish", "detail", "work", "user", "login"].includes(state.currentView)) {
+  if (["search", "publish", "detail", "work", "user", "tool", "login"].includes(state.currentView)) {
     if (location.search && history.length > 1) {
       history.back();
     } else {
@@ -1101,6 +1144,13 @@ function createUserReaderUrl(userId) {
   return url.toString();
 }
 
+function createToolReaderUrl(toolId) {
+  const url = new URL(location.pathname, location.origin);
+  url.searchParams.set("view", "tool");
+  url.searchParams.set("tool", toolId);
+  return url.toString();
+}
+
 function createWorkReaderUrl(work) {
   const detail = normalizeWork(work || {});
   const url = new URL(location.pathname, location.origin);
@@ -1111,7 +1161,7 @@ function createWorkReaderUrl(work) {
 
 function navigateLocal(view, params = {}, options = {}) {
   const url = new URL(location.pathname, location.origin);
-  ["id", "q"].forEach((key) => url.searchParams.delete(key));
+  ["id", "q", "tool"].forEach((key) => url.searchParams.delete(key));
   url.searchParams.set("view", view);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, value);
@@ -1120,9 +1170,11 @@ function navigateLocal(view, params = {}, options = {}) {
   if (view === "work") state.activeWorkId = String(params.id || "");
   if (view === "user") state.activeUserId = String(params.id || "");
   if (view === "detail") state.activePostId = String(params.id || "");
+  if (view === "tool") state.activeToolId = String(params.tool || "");
   if (view !== "work") state.activeWorkId = "";
   if (view !== "user") state.activeUserId = "";
   if (view !== "detail") state.activePostId = "";
+  if (view !== "tool") state.activeToolId = "";
   setView(view, { direction: resolveViewDirection(state.currentView, view, options.direction) });
   window.scrollTo({ top: 0 });
 }
@@ -1135,6 +1187,11 @@ function openWorkReader(work) {
 function openUserReader(user) {
   const detail = cacheUser(user);
   if (detail?.id) navigateLocal("user", { id: detail.id });
+}
+
+function openToolRunner(toolId) {
+  if (!toolRegistry[toolId]) return;
+  navigateLocal("tool", { tool: toolId });
 }
 
 function cacheWorkForReader(work) {
@@ -1276,11 +1333,9 @@ function statusCard(text, options = {}) {
 }
 
 function createOldsquawToolCard(tool, { compact = false } = {}) {
-  const card = document.createElement("a");
+  const card = document.createElement("button");
   card.className = `oldsquaw-tool-card tone-${tool.tone || "blue"}${compact ? " compact" : ""}`;
-  card.href = tool.url;
-  card.target = "_blank";
-  card.rel = "noreferrer";
+  card.type = "button";
   card.innerHTML = `
     <span class="oldsquaw-tool-icon"><img src="${tool.icon}" alt="" /></span>
     <span class="oldsquaw-tool-copy">
@@ -1289,6 +1344,7 @@ function createOldsquawToolCard(tool, { compact = false } = {}) {
       <span>${escapeHtml(tool.desc)}</span>
     </span>
   `;
+  card.addEventListener("click", () => openToolRunner(tool.id));
   return card;
 }
 
@@ -1928,7 +1984,7 @@ function renderBoardSelect() {
 }
 
 function updateTopbar(view) {
-  const titles = { home: "PICKCAT", circle: "喵圈", publish: "发布", message: "消息", mine: "我的", search: "", detail: "帖子详情", work: "作品阅览", user: "用户预览", login: "登录" };
+  const titles = { home: "PICKCAT", circle: "喵圈", publish: "发布", message: "消息", mine: "我的", search: "", detail: "帖子详情", work: "作品阅览", user: "用户预览", tool: toolRegistry[state.activeToolId]?.name || "创作工具", login: "登录" };
   const title = $("[data-title]");
   title.innerHTML = view === "home" ? `<img src="${ASSETS.logo}" alt="PICKCAT" />` : titles[view];
   title.classList.toggle("is-scroll-top", view === "home");
@@ -1936,13 +1992,13 @@ function updateTopbar(view) {
   title.setAttribute("tabindex", view === "home" ? "0" : "-1");
   title.setAttribute("aria-label", view === "home" ? "回到顶部" : titles[view]);
   syncHomeTopbarVisibility({ force: true });
-  $("[data-back]").classList.toggle("hidden", !["search", "publish", "detail", "work", "user", "login"].includes(view));
+  $("[data-back]").classList.toggle("hidden", !["search", "publish", "detail", "work", "user", "tool", "login"].includes(view));
   renderTopActions(view);
 }
 
 function renderTopActions(view) {
   const actions = $(".top-actions");
-  const hidden = ["mine", "search", "publish", "detail", "work", "user", "login"].includes(view);
+  const hidden = ["mine", "search", "publish", "detail", "work", "user", "tool", "login"].includes(view);
   actions.classList.toggle("hidden", hidden);
   if (hidden) return;
   actions.innerHTML = `
@@ -1965,6 +2021,7 @@ function setView(view, options = {}) {
       const img = $("img", item);
       if (img) img.src = active ? img.dataset.iconActive : img.dataset.iconNormal;
     });
+    $(".bottom-nav")?.classList.toggle("hidden", view === "tool");
     updateTopbar(view);
     if (view !== "work") setNativePlayerMode(false);
     updateFeedSentinel();
@@ -1972,6 +2029,7 @@ function setView(view, options = {}) {
     if (view === "message") renderMessagesReadable();
     if (view === "work") renderWorkReader();
     if (view === "user") renderUserReader();
+    if (view === "tool") renderToolRunner();
     if (view === "detail" && state.activePostId) renderPostDetail(state.activePostId);
   });
 }
@@ -1996,6 +2054,12 @@ function routeFromLocation({ replace = false, direction = "none", immediate = fa
     state.activePostId = id;
     if (replace) history.replaceState({ view, id }, "", location.href);
     setView("detail", { direction, immediate });
+    return true;
+  }
+  if (view === "tool" && params.get("tool")) {
+    state.activeToolId = params.get("tool") || "";
+    if (replace) history.replaceState({ view, tool: state.activeToolId }, "", location.href);
+    setView("tool", { direction, immediate });
     return true;
   }
   if (["home", "circle", "publish", "message", "mine", "search", "login"].includes(view)) {
@@ -2023,6 +2087,42 @@ function choosePublishType(type) {
   navigateLocal("publish");
   const labels = type === "video" ? ["视频"] : ["动态", "图文"];
   $$(".compose-tools .chip").forEach((chip) => chip.classList.toggle("active", labels.includes(chip.textContent.trim())));
+}
+
+function renderToolRunner() {
+  const root = $("[data-tool-runner]");
+  const tool = toolRegistry[state.activeToolId] || toolRegistry.nemo;
+  if (!root || !tool) return;
+  root.classList.remove("tool-loaded");
+  root.innerHTML = `
+    <section class="tool-runner-head">
+      <span class="tool-runner-icon"><img src="${tool.icon}" alt="" /></span>
+      <div>
+        <em>${escapeHtml(tool.tag || "创作工具")}</em>
+        <h2>${escapeHtml(tool.name)}</h2>
+        <p>${escapeHtml(tool.desc || "在 Pickcat 内直接使用这个工具。")}</p>
+      </div>
+      <a class="text-btn" href="${tool.fallbackUrl || tool.url}" target="_blank" rel="noreferrer">新窗口</a>
+    </section>
+    <section class="tool-runner-frame-wrap">
+      <iframe
+        class="tool-runner-frame"
+        title="${escapeHtml(tool.name)}"
+        src="${tool.url}"
+        referrerpolicy="no-referrer-when-downgrade"
+        allow="clipboard-read; clipboard-write; fullscreen; microphone; camera; autoplay; gamepad; midi"
+        sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-downloads"
+      ></iframe>
+      <div class="tool-runner-tip">
+        <strong>内置运行中</strong>
+        <span>如果页面禁止内嵌或登录跳转受限，点右上角“新窗口”继续使用。</span>
+      </div>
+    </section>
+  `;
+  const frame = $(".tool-runner-frame", root);
+  frame?.addEventListener("load", () => {
+    root.classList.add("tool-loaded");
+  });
 }
 
 function renderHistory() {
@@ -2529,7 +2629,11 @@ async function openWorkPreview(work) {
       <div class="work-editor-links">
         ${detail.editorEntries
           .map((entry) =>
-            entry.disabled ? `<span class="disabled">${entry.label}</span>` : `<a href="${entry.url}" target="_blank" rel="noreferrer">${entry.label}</a>`
+            entry.disabled
+              ? `<span class="disabled">${entry.label}</span>`
+              : entry.tool
+                ? `<button type="button" data-open-tool="${entry.tool}">${entry.label}</button>`
+                : `<a href="${entry.url}" target="_blank" rel="noreferrer">${entry.label}</a>`
           )
           .join("")}
       </div>
@@ -2541,6 +2645,12 @@ async function openWorkPreview(work) {
     event.preventDefault();
     overlay.remove();
     openWorkReader(detail);
+  });
+  $$("[data-open-tool]", overlay).forEach((button) => {
+    button.addEventListener("click", () => {
+      overlay.remove();
+      openToolRunner(button.dataset.openTool);
+    });
   });
   document.body.appendChild(overlay);
 }
@@ -2721,7 +2831,11 @@ async function renderWorkReader() {
       <div class="work-editor-links">
         ${detail.editorEntries
           .map((entry) =>
-            entry.disabled ? `<span class="disabled">${entry.label}</span>` : `<a href="${entry.url}" target="_blank" rel="noreferrer">${entry.label}</a>`
+            entry.disabled
+              ? `<span class="disabled">${entry.label}</span>`
+              : entry.tool
+                ? `<button type="button" data-open-tool="${entry.tool}">${entry.label}</button>`
+                : `<a href="${entry.url}" target="_blank" rel="noreferrer">${entry.label}</a>`
           )
           .join("")}
       </div>
@@ -2786,6 +2900,9 @@ async function renderWorkReader() {
       reset("分享失败");
     }
     setTimeout(() => reset(), 1600);
+  });
+  $$("[data-open-tool]", root).forEach((button) => {
+    button.addEventListener("click", () => openToolRunner(button.dataset.openTool));
   });
   $("[data-follow-author]", root)?.addEventListener("click", async (event) => {
     if (!state.auth?.token) {
@@ -3520,6 +3637,13 @@ function bindEvents() {
     link.addEventListener("click", (event) => {
       event.preventDefault();
       choosePublishType(link.dataset.createPublish);
+    });
+  });
+  $$("[data-open-tool]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      closeCreateSheet();
+      openToolRunner(link.dataset.openTool);
     });
   });
   document.addEventListener("keydown", (event) => {
