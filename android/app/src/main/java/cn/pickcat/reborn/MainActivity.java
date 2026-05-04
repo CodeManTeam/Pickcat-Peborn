@@ -398,8 +398,41 @@ public class MainActivity extends Activity {
         }
 
         private void proxy(Request request, OutputStream output) throws IOException {
+            String rawPath = request.path;
+            int querySep = rawPath.indexOf('?');
+            String path = querySep >= 0 ? rawPath.substring(0, querySep) : rawPath;
+            String query = querySep >= 0 ? rawPath.substring(querySep + 1) : "";
+
+            if (path.equals("/proxy/media")) {
+                Map<String, String> params = parseQuery(query);
+                String target = params.get("url");
+                if (target == null || target.isEmpty() || !(target.startsWith("http://") || target.startsWith("https://"))) {
+                    write(output, 400, "text/plain; charset=utf-8", "Bad media url".getBytes(StandardCharsets.UTF_8), null);
+                    return;
+                }
+                try {
+                    HttpURLConnection conn = (HttpURLConnection) new URL(target).openConnection();
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(25000);
+                    conn.setRequestProperty("user-agent", "Pickcat-Reborn/0.1 Android");
+                    conn.setRequestProperty("accept", "image/avif,image/webp,image/apng,image/*,*/*;q=0.8");
+                    conn.setRequestProperty("referer", "https://shequ.codemao.cn/");
+                    int status = conn.getResponseCode();
+                    InputStream bodyStream = status >= 400 ? conn.getErrorStream() : conn.getInputStream();
+                    byte[] body = bodyStream == null ? new byte[0] : readAll(bodyStream);
+                    Map<String, String> respHeaders = new HashMap<>();
+                    respHeaders.put("access-control-allow-origin", "*");
+                    respHeaders.put("cache-control", "public, max-age=86400");
+                    write(output, status, conn.getContentType() != null ? conn.getContentType() : "application/octet-stream", body, respHeaders);
+                    conn.disconnect();
+                } catch (IOException error) {
+                    write(output, 502, "text/plain; charset=utf-8",
+                        ("Media proxy failed: " + error.getMessage()).getBytes(StandardCharsets.UTF_8), null);
+                }
+                return;
+            }
+
             String upstreamBase;
-            String path = request.path;
             if (path.startsWith("/proxy/codemao/")) {
                 upstreamBase = "https://api.codemao.cn";
                 path = path.replaceFirst("/proxy/codemao", "");
@@ -414,7 +447,11 @@ public class MainActivity extends Activity {
                 return;
             }
 
-            HttpURLConnection connection = (HttpURLConnection) new URL(upstreamBase + path).openConnection();
+            String upstreamUrl = upstreamBase + path;
+            if (!query.isEmpty()) {
+                upstreamUrl += "?" + query;
+            }
+            HttpURLConnection connection = (HttpURLConnection) new URL(upstreamUrl).openConnection();
             connection.setRequestMethod(request.method);
             connection.setConnectTimeout(15000);
             connection.setReadTimeout(25000);
@@ -502,6 +539,23 @@ public class MainActivity extends Activity {
             if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
             if (path.endsWith(".webp")) return "image/webp";
             return "application/octet-stream";
+        }
+
+        private static Map<String, String> parseQuery(String query) {
+            Map<String, String> params = new HashMap<>();
+            if (query == null || query.isEmpty()) return params;
+            for (String pair : query.split("&")) {
+                int sep = pair.indexOf('=');
+                if (sep > 0) {
+                    try {
+                        String key = java.net.URLDecoder.decode(pair.substring(0, sep), StandardCharsets.UTF_8.name());
+                        String val = java.net.URLDecoder.decode(pair.substring(sep + 1), StandardCharsets.UTF_8.name());
+                        params.put(key, val);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+            return params;
         }
 
         private static String flattenSetCookie(String value) {
