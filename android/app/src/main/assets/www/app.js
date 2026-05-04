@@ -778,7 +778,6 @@ function engineMeta(work = {}, id = "") {
 
 function editorEntries(work = {}) {
   const meta = engineMeta(work, work.id);
-  const bnEntries = meta.code === "nemo" ? [{ label: "BN播放器", tool: "better-nemo", disabled: false }] : [];
   const partnerEntries = [
     meta.code === "nemo" ? { label: "BetterNemo", tool: "better-nemo", disabled: false } : null,
     meta.code === "nemo" ? { label: "BN 播放器", url: `https://bn-p.pages.dev/player/?player=${work.id}`, disabled: false } : null,
@@ -789,7 +788,6 @@ function editorEntries(work = {}) {
   ].filter(Boolean);
   return [
     { label: `${meta.label} 播放器`, url: work.playerUrls?.[0] || meta.workUrl || "", disabled: !(work.playerUrls?.[0] || meta.workUrl) },
-    ...bnEntries,
     { label: `${meta.label} 主页`, url: meta.homeUrl || "", disabled: !meta.homeUrl },
     ...partnerEntries,
     { label: "分享页", url: work.shareUrl || "", disabled: !work.shareUrl },
