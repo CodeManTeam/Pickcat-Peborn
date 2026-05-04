@@ -2334,6 +2334,56 @@ body.native-wrapper .topbar {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
+body.tool-workspace-view {
+  background: #fff;
+}
+
+body.tool-workspace-view .phone-shell {
+  width: 100vw;
+  min-height: var(--viewport-height);
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.tool-workspace-view .topbar {
+  left: 0;
+  width: 100vw;
+  transform: none;
+}
+
+body.tool-workspace-view .topbar.collapsed {
+  transform: translateY(calc(-100% - 8px));
+}
+
+body.tool-workspace-view .app {
+  min-height: var(--viewport-height);
+  padding-right: 0;
+  padding-left: 0;
+  padding-bottom: 0;
+}
+
+body.tool-workspace-view .tool-runner {
+  gap: 0;
+  min-height: calc(var(--viewport-height) - 58px);
+  padding-top: 0;
+}
+
+body.tool-workspace-view .tool-runner-head {
+  padding: 8px max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left));
+}
+
+body.tool-workspace-view .tool-runner-frame-wrap {
+  min-height: calc(var(--viewport-height) - 154px);
+  border: 0;
+  border-radius: 0;
+}
+
+body.tool-workspace-view .tool-runner-frame {
+  height: calc(var(--viewport-height) - 154px);
+  min-height: 720px;
+}
+
 .user-reader-hero {
   position: relative;
   display: grid;

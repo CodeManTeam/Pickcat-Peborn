@@ -1,0 +1,370 @@
+/* ----- 隐藏不需要的元素（保持原有功能）----- */
+#__vconsole {
+    display: none !important;
+}
+
+div.blocklyTreeNode:has(#advanced) {
+    display: none !important;
+}
+
+div.blocklyWidgetDiv > div.dropdown-triangle.lower,
+div.blocklyWidgetDiv > div.dropdown-triangle.upper {
+    display: none !important;
+}
+
+svg.blocklySvgCopy {
+    display: none;
+}
+
+/* ----- 下拉菜单（毛玻璃 + 蓝色）----- */
+div.blocklyDropdownMenu {
+    background: rgba(255, 255, 255, 0.5) !important;   /* --card-bg */
+    border: 1px solid rgba(226, 232, 240, 0.2) !important; /* --border-color */
+    border-radius: 12px !important;                  /* --border-radius */
+    backdrop-filter: blur(10px);
+    padding: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);      /* --shadow */
+}
+
+div.blocklyDropdownMenu div.menu-item {
+    color: #334155 !important;                       /* --text-color */
+    background: transparent !important;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+div.blocklyDropdownMenu div.menu-item.menu_item_selected {
+    background: rgba(59, 130, 246, 0.12) !important;  /* 主色半透 */
+    border: 1px solid #3b82f6 !important;            /* --primary-color */
+}
+
+/* ----- 左侧工具箱整体背景 ----- */
+div.blocklyToolboxDiv {
+    background-color: rgba(241, 245, 249, 0.5) !important; /* --nav-bg */
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(226, 232, 240, 0.2);
+}
+
+/* 工具箱树节点行 */
+.blocklyToolboxDiv .blocklyTreeRoot .blocklyTreeNode .blocklyTreeRow {
+    background: rgba(255, 255, 255, 0.5) !important; /* --card-bg */
+    border: 1px solid rgba(226, 232, 240, 0.2) !important;
+    border-radius: 30% !important;
+    margin-top: 5px;
+    transition: all 0.3s;
+}
+
+/* ----- 右侧悬浮块（flyout）毛玻璃效果 ----- */
+svg.blocklyFlyout {
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
+    background: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+svg.blocklyFlyout > path.blocklyFlyoutBackground {
+    fill: transparent !important;
+}
+
+/* ----- 悬浮块内加号/配置按钮 ----- */
+div.flyout_add_btn,
+div.flyout_config_btn {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.5) !important;
+    border: 1px solid rgba(226, 232, 240, 0.2) !important;
+    border-radius: 12px !important;
+    color: #334155;
+    transition: all 0.3s;
+}
+
+div.flyout_add_btn:hover,
+div.flyout_config_btn:hover {
+    border-color: #3b82f6 !important;
+    background: rgba(59, 130, 246, 0.08) !important;
+}
+
+/* ----- 工具错误提示（主色）----- */
+.flyout-toolbox-error {
+    fill: none;
+    font-family: 'GoogleSans-Bold', 'vivoSans-Bold', sans-serif;
+    font-size: 14px;
+    color: #334155;
+    line-height: 14px;
+    text-shadow: 0 0 5px rgba(255, 255, 0, 0.3);
+}
+.flyout-toolbox-error > text.blocklyText {
+    fill: #3b82f6;   /* --primary-color */
+}
+
+/* ========== 自定义悬浮球 & 悬浮窗 ========== */
+/* ----- 悬浮球（毛玻璃圆球）----- */
+.float-ball {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    border-radius: 50%;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    touch-action: manipulation;
+    right: 100px;
+    bottom: 100px;
+}
+
+.float-ball.hide {
+    display: none !important;
+}
+
+.float-ball:active {
+    transform: scale(0.92);
+    transition: transform 0.1s ease;
+}
+
+.float-ball.active {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.15);
+}
+
+.float-ball i {
+    color: #334155;
+    font-size: 22px;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+}
+
+.float-ball.active i {
+    transform: rotate(45deg);
+}
+
+/* ----- 悬浮窗（毛玻璃面板）----- */
+.float-window {
+    position: fixed;
+    width: 250px;
+    max-width: 90vw;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 12px;
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    z-index: 100000;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    overflow: hidden;
+    right: 120px;
+    bottom: 120px;
+}
+
+.float-window.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: all;
+}
+
+/* ----- 悬浮窗标题栏 ----- */
+.window-header {
+    background: rgba(241, 245, 249, 0.5);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.2);
+    color: #334155;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(20px);
+}
+
+.window-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    color: #3b82f6;
+}
+
+/* 关闭按钮 */
+.close-btn {
+    background: transparent;
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    color: #334155;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.close-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    color: #3b82f6;
+    transform: scale(1.05);
+}
+
+/* ----- 悬浮窗内容区 ----- */
+.window-content {
+    padding: 16px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: transparent;
+}
+
+/* 菜单项标题（毛玻璃按钮） */
+.bn-menu-item.menu-title {
+    background: rgba(241, 245, 249, 0.5);
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: #334155;
+    font-weight: 600;
+    margin-bottom: 10px;
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+/* 普通菜单按钮 */
+.bn-menu-item {
+    padding: 8px 16px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #334155;
+}
+
+.bn-menu-item:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.bn-menu-item:active {
+    transform: translateY(0);
+}
+
+.bn-menu-item i {
+    color: #3b82f6;
+    font-size: 16px;
+    width: 24px;
+    text-align: center;
+}
+
+.bn-menu-item span {
+    color: #334155;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* ----- 输入框组（一体化设计）----- */
+li.bn-menu-input {
+    color: #334155;
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    list-style: none;
+}
+
+/* 输入框本身（圆角左侧） */
+li.bn-menu-input > input[type="text"],
+li.bn-menu-input > input[type="number"] {
+    color: #334155;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    border-right: none;
+    padding: 8px 12px;
+    border-radius: 6px 0 0 6px;
+    font-size: 14px;
+    width: 100px;
+    height: 36px;
+    box-sizing: border-box;
+    transition: all 0.3s;
+    backdrop-filter: blur(5px);
+}
+
+li.bn-menu-input > input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 下拉选择框（圆角左侧） */
+li.bn-menu-input > select {
+    font-size: 14px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.5);
+    color: #334155;
+    border-radius: 6px 0 0 6px;
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    border-right: none;
+    padding: 0 12px;
+    transition: all 0.3s;
+    backdrop-filter: blur(5px);
+}
+
+li.bn-menu-input > select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 输入框附属按钮（圆角右侧） */
+li.bn-menu-input > button {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    height: 36px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #334155;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+li.bn-menu-input > button:hover {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+li.bn-menu-input > button:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ----- 状态信息行 ----- */
+.status-info {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    color: #334155;
+    font-size: 14px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.2);
+}

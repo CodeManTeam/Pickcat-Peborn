@@ -45,13 +45,14 @@ const oldsquawTools = [
   {
     id: "better-nemo",
     name: "BetterNemo",
-    tag: "Nemo 适配器",
-    desc: "BetterNemo 需要 Nemo 工作区注入资源；当前先提供软件内适配说明，避免误嵌下载页。",
+    tag: "本地 Workspace",
+    desc: "已随 Pickcat 打包 BetterNemo 工作区、扩展、主题和加载器资源，直接在软件内启动。",
     url: "public/tools/oldsquaw/better-nemo/index.html",
     fallbackUrl: oldsquawLinks.betterNemo,
     icon: ASSETS.nemo,
     tone: "blue",
-    integration: "adapter"
+    integration: "local-static",
+    layout: "workspace"
   },
   {
     id: "coco-pro",
@@ -1198,6 +1199,11 @@ function openToolRunner(toolId) {
   navigateLocal("tool", { tool: toolId });
 }
 
+function isWorkspaceToolView(view = state.currentView) {
+  const tool = view === "tool" ? toolRegistry[state.activeToolId] : null;
+  return Boolean(tool?.layout === "workspace");
+}
+
 function cacheWorkForReader(work) {
   const detail = normalizeWork(work || {});
   if (!detail.id) return detail;
@@ -2018,6 +2024,7 @@ function setView(view, options = {}) {
     const fromView = state.currentView;
     if (fromView !== view) state.previousView = fromView;
     state.currentView = view;
+    document.body.classList.toggle("tool-workspace-view", isWorkspaceToolView(view));
     animateViewChange(fromView, view, options);
     $$(".nav-item").forEach((item) => {
       const active = item.dataset.nav === view;
