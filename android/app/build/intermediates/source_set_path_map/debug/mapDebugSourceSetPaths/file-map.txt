@@ -1,7 +1,0 @@
-cn.pickcat.reborn.app-pngs-0 D:\VoxelAI\CodemaoReborn\android\app\build\generated\res\pngs\debug
-cn.pickcat.reborn.app-resValues-1 D:\VoxelAI\CodemaoReborn\android\app\build\generated\res\resValues\debug
-cn.pickcat.reborn.app-packageDebugResources-2 D:\VoxelAI\CodemaoReborn\android\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
-cn.pickcat.reborn.app-packageDebugResources-3 D:\VoxelAI\CodemaoReborn\android\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
-cn.pickcat.reborn.app-debug-4 D:\VoxelAI\CodemaoReborn\android\app\build\intermediates\merged_res\debug\mergeDebugResources
-cn.pickcat.reborn.app-debug-5 D:\VoxelAI\CodemaoReborn\android\app\src\debug\res
-cn.pickcat.reborn.app-main-6 D:\VoxelAI\CodemaoReborn\android\app\src\main\res
