@@ -18,7 +18,10 @@ const ASSETS = {
   nemo: "public/assets/pickcat/nemo.png",
   kitten: "public/assets/pickcat/kitten.png",
   moreMenu: "public/assets/pickcat/ic_more_mine_black.png",
-  settings: "public/assets/pickcat/imoji_menu_settings.png"
+  settings: "public/assets/pickcat/imoji_menu_settings.png",
+  kn: "public/assets/pickcat/kn.png",
+  cocoPro: "public/assets/pickcat/cocopro.png",
+  betterNemo: "public/assets/pickcat/betternemo.png",
 };
 
 const apiConfig = {
@@ -53,7 +56,7 @@ const oldsquawTools = [
     desc: "已随 Pickcat 打包 BetterNemo 工作区、扩展、主题和加载器资源，直接在软件内启动。",
     url: "public/tools/oldsquaw/better-nemo/index.html",
     fallbackUrl: oldsquawLinks.betterNemo,
-    icon: ASSETS.nemo,
+    icon: ASSETS.betterNemo,
     tone: "blue",
     integration: "local-static",
     layout: "workspace"
@@ -65,7 +68,7 @@ const oldsquawTools = [
     desc: "已随 Pickcat 打包 CoCo-Oldsquaw 静态站，直接在软件内启动编辑器。",
     url: "public/tools/oldsquaw/coco/index.html",
     fallbackUrl: oldsquawLinks.cocoPro,
-    icon: ASSETS.appLogo,
+    icon: ASSETS.cocoPro,
     tone: "green",
     integration: "local-static"
   },
@@ -76,7 +79,7 @@ const oldsquawTools = [
     desc: "已内置 KN-Oldsquaw 静态入口，用本地 HTML 承接 KittenN 镜像体验。",
     url: "public/tools/oldsquaw/kn/1.0.2.html",
     fallbackUrl: oldsquawLinks.kn,
-    icon: ASSETS.kitten,
+    icon: ASSETS.kn,
     tone: "yellow",
     integration: "local-static"
   },
@@ -121,7 +124,7 @@ const toolRegistry = {
     desc: "在 Pickcat 内打开 KittenN 创作环境。",
     url: "https://kn.codemao.cn/",
     fallbackUrl: "https://kn.codemao.cn/",
-    icon: ASSETS.kitten,
+    icon: ASSETS.kn,
     tone: "yellow"
   },
   "better-nemo-pc": {
@@ -132,7 +135,7 @@ const toolRegistry = {
     url: "public/tools/hhcl233/better-nemo-pc/index.html",
     fallbackUrl: communityToolLinks.betterNemoPc,
     updateUrl: communityToolLinks.betterNemoPc,
-    icon: ASSETS.nemo,
+    icon: ASSETS.betterNemo,
     tone: "blue",
     integration: "local-static",
     layout: "workspace"
@@ -778,6 +781,7 @@ function editorEntries(work = {}) {
   const bnEntries = meta.code === "nemo" ? [{ label: "BN播放器", tool: "better-nemo", disabled: false }] : [];
   const partnerEntries = [
     meta.code === "nemo" ? { label: "BetterNemo", tool: "better-nemo", disabled: false } : null,
+    meta.code === "nemo" ? { label: "BN 播放器", url: `https://bn-p.pages.dev/player/?player=${work.id}`, disabled: false } : null,
     meta.code === "nemo" ? { label: "BetterNemoPC", tool: "better-nemo-pc", disabled: false } : null,
     meta.code === "kittenN" ? { label: "KN-Oldsquaw", tool: "kn-oldsquaw", disabled: false } : null,
     { label: "CoCo Pro", tool: "coco-pro", disabled: false },
