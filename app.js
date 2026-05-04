@@ -103,6 +103,8 @@ const state = {
   followingDone: false,
   mineFollowers: [],
   mineFollowingUsers: [],
+  mineFollowerOffset: 0,
+  mineFollowingOffset: 0,
   user: JSON.parse(localStorage.getItem("pickcat:user") || "null"),
   auth: JSON.parse(localStorage.getItem("pickcat:auth") || "null"),
   savedLogin: JSON.parse(localStorage.getItem("pickcat:login") || "null"),
@@ -114,6 +116,17 @@ const state = {
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+function isNativeWrapper() {
+  return Boolean(window.PickcatAndroid);
+}
+
+function applyRuntimeShellMode() {
+  const nativeWrapper = isNativeWrapper();
+  document.body.classList.toggle("native-wrapper", nativeWrapper);
+  document.documentElement.style.setProperty("--shell-width", nativeWrapper ? "100vw" : "min(100vw, 430px)");
+  document.documentElement.style.setProperty("--shell-inset-y", nativeWrapper ? "0px" : "");
+}
 
 function saveSessionToStorage(remember = true) {
   if (!state.user || !state.auth) return;
@@ -288,10 +301,10 @@ const api = {
     }),
   me: () => request(apiConfig.codemao, "/web/users/details", { auth: true }),
   messageCount: () => request(apiConfig.codemao, "/web/message-record/count", { auth: true }),
-  messageRecord: (queryType) =>
+  messageRecord: (queryType, limit = 20) =>
     request(apiConfig.codemao, "/web/message-record", {
       auth: true,
-      params: { query_type: queryType, offset: 0, limit: 10 }
+      params: { query_type: queryType, offset: 0, limit }
     }),
   boards: () => request(apiConfig.codemao, "/web/forums/boards/simples/all"),
   boardPosts: (boardId, page = 1, limit = 10) =>
@@ -339,11 +352,11 @@ const api = {
     request(apiConfig.codemao, "/web/api/user/works/published", {
       params: { user_id: userId, types: "1,3,5", limit }
     }),
-  userProfile: (userId) => request(apiConfig.codemao, `/web/api/user/info/detail/${userId}`),
-  userProfileLegacy: (userId) => request(apiConfig.codemao, `/api/user/info/detail/${userId}`),
-  userTiger: (userId) => request(apiConfig.codemao, `/tiger/user/${userId}`),
+  userProfile: (userId) => request(apiConfig.codemao, `/web/api/user/info/detail/${userId}`, { auth: true }),
+  userProfileLegacy: (userId) => request(apiConfig.codemao, `/api/user/info/detail/${userId}`, { auth: true }),
+  userTiger: (userId) => request(apiConfig.codemao, `/tiger/user/${userId}`, { auth: true }),
   userDynamicInfo: (userId) =>
-    request(apiConfig.codemao, "/nemo/v2/user/dynamic/info", { params: { user_id: userId } }),
+    request(apiConfig.codemao, "/nemo/v2/user/dynamic/info", { auth: true, params: { user_id: userId } }),
   userBusinessTotal: (userId) =>
     request(apiConfig.codemao, "/nemo/v2/works/business/total", { params: { user_id: userId } }),
   userFans: (userId, limit = 12, offset = 0) =>
@@ -386,7 +399,7 @@ const api = {
     request(apiConfig.codemao, `/nemo/v2/user/${userId}/follow`, {
       method: followed ? "POST" : "DELETE",
       auth: true,
-      body: {}
+      body: followed ? {} : undefined
     }),
   workLabels: (workId) => request(apiConfig.codemao, "/creation-tools/v1/work-details/work-labels", { params: { work_id: workId } }),
   workRecommended: (workId) => request(apiConfig.codemao, `/nemo/v2/works/web/${workId}/recommended`),
@@ -412,8 +425,25 @@ function stripHtml(html = "") {
   return tmp.textContent.replace(/\s+/g, " ").trim();
 }
 
+function proxyMediaUrl(value = "") {
+  if (!value) return "";
+  try {
+    const target = new URL(value, location.origin);
+    if (!/^https?:$/.test(target.protocol)) return value;
+    if (target.origin === location.origin) return target.toString();
+    const host = target.hostname.toLowerCase();
+    const shouldProxy =
+      host === "cdn-community.codemao.cn" ||
+      host === "cdn-community.bcmcdn.com";
+    if (!shouldProxy) return target.toString();
+    return `${location.origin}/proxy/media?url=${encodeURIComponent(target.toString())}`;
+  } catch {
+    return value;
+  }
+}
+
 function extractImages(html = "") {
-  return [...html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)].map((match) => match[1]);
+  return [...html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)].map((match) => proxyMediaUrl(match[1]));
 }
 
 function sanitizeHtml(html = "") {
@@ -425,6 +455,11 @@ function sanitizeHtml(html = "") {
       const value = attribute.value.toLowerCase();
       if (name.startsWith("on") || value.startsWith("javascript:")) node.removeAttribute(attribute.name);
     });
+  });
+  doc.body.querySelectorAll("img[src]").forEach((node) => {
+    const original = node.getAttribute("src") || "";
+    node.setAttribute("data-origin-src", original);
+    node.setAttribute("src", proxyMediaUrl(original));
   });
   return doc.body.innerHTML;
 }
@@ -487,7 +522,7 @@ function normalizePost(item) {
     author: item.user?.nickname || "不存在的用户",
     authorId: item.user?.id || item.user_id || "",
     avatarText: avatarText(item.user?.nickname),
-    avatarUrl: item.user?.avatar_url || "",
+    avatarUrl: proxyMediaUrl(item.user?.avatar_url || ""),
     time: formatDate(item.created_at),
     title: item.title || "无标题",
     body: text.slice(0, 150),
@@ -604,6 +639,7 @@ function editorEntries(work = {}) {
   return [
     { label: `${meta.label} 播放器`, url: work.playerUrls?.[0] || meta.workUrl || "", disabled: !(work.playerUrls?.[0] || meta.workUrl) },
     { label: `${meta.label} 主页`, url: meta.homeUrl || "", disabled: !meta.homeUrl },
+    { label: "分享页", url: work.shareUrl || "", disabled: !work.shareUrl },
     { label: "社区原站", url: work.originalUrl || "", disabled: !work.originalUrl }
   ];
 }
@@ -665,6 +701,7 @@ function normalizeWork(work) {
     : id
       ? `https://shequ.codemao.cn/work/${id}`
       : "";
+  const shareUrl = work.share_url || work.shareUrl || work.unify_share_url || work.unifyShareUrl || originalUrl;
   return {
     id: String(id || ""),
     type: work.type || work.work_type || "",
@@ -676,11 +713,12 @@ function normalizeWork(work) {
     name: work.work_name || work.name || work.title || "未命名作品",
     description: apiText(work.work_introduction || work.description || work.introduction || "暂无介绍"),
     operation: apiText(work.operation_description || ""),
-    preview: work.preview || work.cover || work.cover_url || work.thumbnail || "",
+    preview: proxyMediaUrl(work.preview || work.cover || work.cover_url || work.thumbnail || work.screenshot_cover_url || ""),
     views: work.view_times || work.views || work.n_views || 0,
     likes: work.praise_times || work.liked_times || work.likes || work.n_likes || 0,
     collects: work.collect_times || work.collects || work.n_collects || 0,
     forks: work.fork_times || work.forks || work.n_forks || 0,
+    shares: work.share_times || work.shares || work.n_shares || 0,
     comments: work.comment_times || work.comment_count || work.n_comments || 0,
     liked: Boolean(work.is_praised || work.is_liked || work.liked || work.abilities?.is_praised),
     collected: Boolean(work.is_collected || work.collected || work.abilities?.is_collected),
@@ -689,14 +727,15 @@ function normalizeWork(work) {
     author: {
       id: author.id || work.user_id || "",
       nickname: author.nickname || work.nickname || "",
-      avatar: author.avatar || author.avatar_url || work.avatar_url || work.avatar || "",
+      avatar: proxyMediaUrl(author.avatar || author.avatar_url || work.avatar_url || work.avatar || ""),
       signature: author.signature || author.description || "",
-      followed: Boolean(author.is_followed || work.is_followed || work.followed)
+      followed: resolveFollowedState(author, work) ?? false
     },
     labels: work.work_labels?.items || work.labels || work.work_label_list || [],
     createdAt: work.created_at || work.create_time || work.publish_time || 0,
     originalUrl,
-    editorEntries: editorEntries({ id: String(id || ""), originalUrl, playerUrls, ...work })
+    shareUrl,
+    editorEntries: editorEntries({ id: String(id || ""), originalUrl, shareUrl, playerUrls, ...work })
   };
 }
 
@@ -750,25 +789,38 @@ function firstObject(...items) {
   return items.find((item) => item && typeof item === "object") || {};
 }
 
+function resolveFollowedState(...sources) {
+  for (const item of sources) {
+    if (!item || typeof item !== "object") continue;
+    if (item.followed !== undefined) return Boolean(item.followed);
+    if (item.isFollowing !== undefined) return Boolean(item.isFollowing);
+    if (item.is_followed !== undefined) return Boolean(item.is_followed);
+    if (item.is_following !== undefined) return Boolean(item.is_following);
+    if (item.is_attention !== undefined) return Boolean(item.is_attention);
+  }
+  return undefined;
+}
+
 function normalizeUserProfile(...sources) {
   const data = firstObject(...sources);
   const info = data.data?.userInfo?.user || data.userInfo?.user || data.user || data;
   const dynamic = sources.find((item) => item?.user_id || item?.user_cover || item?.user_description) || {};
   const tiger = sources.find((item) => item?.avatar_url && (item?.n_followers !== undefined || item?.n_works !== undefined)) || {};
   const metrics = sources.find((item) => item?.n_views !== undefined || item?.n_likes !== undefined || item?.n_re_create !== undefined) || {};
+  const followed = resolveFollowedState(info, dynamic, tiger, ...sources);
   const id = info.id || info.user_id || dynamic.user_id || tiger.id || metrics.user_id || "";
   const description = apiText(info.description || dynamic.user_description || tiger.description || "");
   const doing = apiText(info.doing || dynamic.doing || tiger.current_activity || "");
   return {
     id: String(id || ""),
     nickname: info.nickname || dynamic.nickname || tiger.nickname || metrics.nickname || "编程猫用户",
-    avatar: info.avatar || info.avatar_url || dynamic.avatar_url || tiger.avatar_url || metrics.avatar_url || "",
-    cover: dynamic.user_cover || info.cover || info.user_cover || "",
+    avatar: proxyMediaUrl(info.avatar || info.avatar_url || dynamic.avatar_url || tiger.avatar_url || metrics.avatar_url || ""),
+    cover: proxyMediaUrl(dynamic.user_cover || info.cover || info.user_cover || ""),
     description,
     doing,
     previewWorkId: info.preview_work_id || dynamic.preview_work_id || 0,
     level: info.level || dynamic.author_level || metrics.author_level || 0,
-    followed: Boolean(dynamic.is_attention || tiger.is_following || info.is_following),
+    followed,
     stats: {
       works: tiger.n_works ?? dynamic.nworks ?? 0,
       followers: tiger.n_followers ?? dynamic.nfans ?? 0,
@@ -791,6 +843,7 @@ function mergeUserProfile(base, ...sources) {
     cover: incoming.cover || base.cover || "",
     description: incoming.description || base.description || "",
     doing: incoming.doing || base.doing || "",
+    followed: incoming.followed ?? base.followed ?? false,
     stats: { ...(base.stats || {}), ...(incoming.stats || {}) }
   });
 }
@@ -803,16 +856,18 @@ function cacheUser(user) {
 
 function normalizeUserListItem(item = {}) {
   const base = normalizeUserProfile(item.user || item.user_info || item.data || item);
+  const followed = resolveFollowedState(item, item.user, item.user_info, item.data, base);
   return cacheUser({
     ...base,
     id: String(base.id || item.id || item.user_id || ""),
     nickname: base.nickname || item.nickname || item.name || "编程猫用户",
-    avatar: base.avatar || item.avatar || item.avatar_url || "",
+    avatar: proxyMediaUrl(base.avatar || item.avatar || item.avatar_url || ""),
     description: base.description || item.description || "",
+    followed: followed ?? base.followed ?? false,
     stats: {
       ...(base.stats || {}),
       works: base.stats?.works ?? item.n_works ?? 0,
-      likes: base.stats?.likes ?? item.total_likes ?? 0
+      likes: item.total_likes ?? item.n_praises ?? base.stats?.likes ?? 0
     }
   });
 }
@@ -953,6 +1008,39 @@ function readCachedUser(id) {
   }
 }
 
+function syncFollowState(userId, followed, profile = null) {
+  const id = String(userId || "");
+  if (!id) return;
+  const patch = profile || {};
+  const apply = (user) => {
+    if (!user || String(user.id || "") !== id) return user;
+    return cacheUser({ ...user, ...patch, followed });
+  };
+  const cached = readCachedUser(id);
+  const merged = cacheUser({ ...(cached || {}), ...patch, id, followed });
+  state.followingUsers = followed
+    ? mergeUniqueUsers([merged, ...state.followingUsers.map(apply)].filter(Boolean))
+    : state.followingUsers.map(apply).filter((user) => String(user.id || "") !== id);
+  state.mineFollowers = state.mineFollowers.map(apply);
+  state.mineFollowingUsers = followed
+    ? mergeUniqueUsers([merged, ...state.mineFollowingUsers.map(apply)].filter(Boolean))
+    : state.mineFollowingUsers.map(apply).filter((user) => String(user.id || "") !== id);
+  state.recommendedUsers = state.recommendedUsers.map(apply);
+  state.followingPosts = state.followingPosts.map((item) => {
+    const authorId = String(item?.author?.id || item?.authorId || "");
+    if (authorId !== id) return item;
+    return { ...item, author: { ...(item.author || {}), followed } };
+  });
+}
+
+function applyFollowChange(user, followed) {
+  const nextFollowers = Math.max(0, Number(user?.stats?.followers || 0) + (followed ? 1 : -1));
+  user.followed = followed;
+  user.stats = { ...(user.stats || {}), followers: nextFollowers };
+  syncFollowState(user.id, followed, user);
+  return user;
+}
+
 function createUserReaderUrl(userId) {
   const url = new URL(location.pathname, location.origin);
   url.searchParams.set("view", "user");
@@ -1019,7 +1107,7 @@ function normalizeWorkComment(item) {
     user: {
       id: user.id || user.user_id || "",
       nickname: user.nickname || "编程猫用户",
-      avatar: user.avatar_url || user.avatar || "",
+      avatar: proxyMediaUrl(user.avatar_url || user.avatar || ""),
       workshop: user.work_shop_name || ""
     },
     content: apiText(item.rich_content || item.content || ""),
@@ -1330,7 +1418,7 @@ async function loadRecommendedUsers() {
     state.recommendedUsers = (data.items || []).map((user) => ({
       id: user.user_id || user.id,
       nickname: user.nickname,
-      avatar: user.avatar_url,
+      avatar: proxyMediaUrl(user.avatar_url),
       description: user.description,
       targetUrl: user.target_url
     }));
@@ -1664,6 +1752,12 @@ async function openCircleBoard(board, { append = false } = {}) {
   }
   state.circleBoardLoading = true;
   renderCircleBoard(board);
+  if (!append) {
+    requestAnimationFrame(() => {
+      const top = window.scrollY + root.getBoundingClientRect().top - 88;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    });
+  }
   try {
     const response = await api.boardPosts(board.id, state.circleBoardPage, 10);
     const posts = (response.items || []).map((item) => normalizePost({ ...item, board_name: board.name, board_id: board.id }));
@@ -1848,6 +1942,53 @@ function renderHistory() {
   );
 }
 
+function matchesKeyword(value, keyword) {
+  return String(value || "").toLowerCase().includes(String(keyword || "").toLowerCase());
+}
+
+function createSearchSection(title, count, nodes = [], emptyText = "没有结果") {
+  const section = document.createElement("section");
+  section.className = "work-comments-section";
+  section.innerHTML = `
+    <div class="section-head flush">
+      <h2>${title}</h2>
+      <span class="text-btn text-btn-static">${compactNumber(count)}</span>
+    </div>
+  `;
+  section.append(...(nodes.length ? nodes : [statusCard(emptyText)]));
+  return section;
+}
+
+async function searchWorks(keyword) {
+  const [home, discover0, discover1, discover2] = await Promise.all([
+    api.homeWorks().catch(() => []),
+    api.discoverWorks(0, 12).catch(() => ({ items: [] })),
+    api.discoverWorks(12, 12).catch(() => ({ items: [] })),
+    api.discoverWorks(24, 12).catch(() => ({ items: [] }))
+  ]);
+  const discoverItems = [
+    ...(Array.isArray(home) ? home : home.recommend_work_list || []),
+    ...(discover0.items || discover0.data?.items || discover0.data || []),
+    ...(discover1.items || discover1.data?.items || discover1.data || []),
+    ...(discover2.items || discover2.data?.items || discover2.data || []),
+    ...state.discoverWorks
+  ];
+  const seen = new Set();
+  return discoverItems
+    .map((item) => (item?.engineLabel ? item : normalizeFeedWork(item)))
+    .filter((work) => {
+      if (!work?.id || seen.has(work.id)) return false;
+      seen.add(work.id);
+      const haystack = [
+        work.name,
+        work.description,
+        work.author?.nickname,
+        ...(work.labels || []).map((label) => label.name || label.label_name || label)
+      ].join(" ");
+      return matchesKeyword(haystack, keyword);
+    });
+}
+
 async function runSearch(keyword) {
   const value = keyword.trim();
   if (!value) return;
@@ -1858,9 +1999,13 @@ async function runSearch(keyword) {
   const root = $("[data-search-results]");
   root.replaceChildren(loadingCard(`正在搜索：${value}`, "搜索中"));
   try {
-    const result = await api.searchPosts(value, 20);
-    const posts = (result.items || []).map(normalizePost);
-    root.replaceChildren(...(posts.length ? posts.map(createPost) : [statusCard("没有找到相关帖子")]));
+    const [postResult, works] = await Promise.all([api.searchPosts(value, 20), searchWorks(value)]);
+    const posts = (postResult.items || []).map(normalizePost);
+    const sections = [
+      createSearchSection("帖子", posts.length, posts.map(createPost), "没有找到相关帖子"),
+      createSearchSection("作品", works.length, works.map(createHomeWorkCard), "没有找到相关作品")
+    ];
+    root.replaceChildren(...sections);
   } catch (error) {
     root.replaceChildren(errorCard(`搜索失败：${error.message}`, "搜索失败"));
   }
@@ -1879,7 +2024,7 @@ async function renderPostDetail(id) {
     const detailUser = {
       id: detail.user?.id || detail.user_id || "",
       nickname: detail.user?.nickname || "不存在的用户",
-      avatar: detail.user?.avatar_url || ""
+      avatar: proxyMediaUrl(detail.user?.avatar_url || "")
     };
     root.innerHTML = `
       <h2>${detail.title}</h2>
@@ -1933,7 +2078,7 @@ function normalizeReply(item) {
     id: item.id,
     authorId: user.id || user.user_id || item.user_id || "",
     author: user.nickname || item.nickname || "社区用户",
-    avatar: user.avatar_url || item.avatar_url || "",
+    avatar: proxyMediaUrl(user.avatar_url || item.avatar_url || ""),
     avatarText: avatarText(user.nickname || item.nickname),
     createdAt: item.created_at || item.create_time || 0,
     content: item.content || item.comment || item.reply || "",
@@ -2096,7 +2241,7 @@ function bindDetailReplyEvents(postId) {
 function renderMineShell(user) {
   const name = user?.nickname || "未登录";
   const desc = user?.description || "Pickcat 复刻计划 · 前端多端原型";
-  const avatar = user?.avatar_url || user?.avatar;
+  const avatar = proxyMediaUrl(user?.avatar_url || user?.avatar);
   const stats = [
     { label: "ID", value: user?.id || "--" },
     { label: "作品", value: user?.stats?.works ?? (state.mineWorks.length || 0) },
@@ -2144,6 +2289,8 @@ async function renderMinePage() {
     state.mineFollowingUsers = followingUsers
       .map(normalizeUserListItem)
       .filter((item, index, list) => item.id && list.findIndex((user) => user.id === item.id) === index);
+    state.mineFollowerOffset = responseItems(fanData).length;
+    state.mineFollowingOffset = responseItems(following).length;
     mergedUser.stats = {
       ...(mergedUser.stats || {}),
       followers: responseTotal(fanData, state.mineFollowers.length),
@@ -2186,19 +2333,37 @@ function renderMineLoggedOut() {
 
 function renderMineContent(user, worksRaw = { items: [] }) {
   const root = $("[data-mine-feed]");
+  const followerTotal = Number(user?.stats?.followers || state.mineFollowers.length);
+  const followingTotal = Number(user?.stats?.following || state.mineFollowingUsers.length);
   if (state.mineTab === "activity") {
     const activities = [];
-    if (state.mineFollowingUsers.length) activities.push(createUserMiniSection("我的关注", state.mineFollowingUsers.slice(0, 6), "还没有读取到关注"));
-    if (state.mineFollowers.length) activities.push(createUserMiniSection("我的粉丝", state.mineFollowers.slice(0, 6), "还没有读取到粉丝"));
     if (state.mineWorks.length) activities.push(...state.mineWorks.map(createMineActivityCard));
-    if (!activities.length) activities.push(statusCard("还没有动态"));
+    if (!activities.length) activities.push(statusCard("还没有读取到个人动态"));
     root.replaceChildren(...activities);
   } else if (state.mineTab === "works") {
     root.replaceChildren(...(state.mineWorks.length ? state.mineWorks.map(createWorkCard) : [statusCard("还没有读取到公开作品")]));
   } else {
     root.replaceChildren(
-      createUserMiniSection("我的关注", state.mineFollowingUsers, "暂时没有读取到关注列表"),
-      createUserMiniSection("我的粉丝", state.mineFollowers, "暂时没有读取到粉丝列表")
+      createCollapsibleUserSection("我的关注", state.mineFollowingUsers, {
+        total: followingTotal,
+        emptyText: "暂时没有读取到关注列表",
+        loadMore: async () => {
+          const result = await api.following(user.id, 30, state.mineFollowingOffset);
+          const items = responseItems(result);
+          state.mineFollowingOffset += items.length;
+          return items.map(normalizeUserListItem).filter((item) => item.id);
+        }
+      }),
+      createCollapsibleUserSection("我的粉丝", state.mineFollowers, {
+        total: followerTotal,
+        emptyText: "暂时没有读取到粉丝列表",
+        loadMore: async () => {
+          const result = await api.userFans(user.id, 30, state.mineFollowerOffset);
+          const items = responseItems(result);
+          state.mineFollowerOffset += items.length;
+          return items.map(normalizeUserListItem).filter((item) => item.id);
+        }
+      })
     );
   }
 }
@@ -2287,6 +2452,7 @@ async function openWorkPreview(work) {
 function openImageViewer(src, alt = "帖子图片") {
   if (!src) return;
   const safeSrc = escapeHtml(src);
+  const originalSrc = escapeHtml(src.startsWith(`${location.origin}/proxy/media?url=`) ? new URL(src).searchParams.get("url") || src : src);
   const overlay = document.createElement("div");
   overlay.className = "image-viewer-modal";
   overlay.innerHTML = `
@@ -2295,7 +2461,7 @@ function openImageViewer(src, alt = "帖子图片") {
       <img src="${safeSrc}" alt="${escapeHtml(alt)}" />
       <figcaption>
         <button type="button" class="image-viewer-close">关闭</button>
-        <a href="${safeSrc}" target="_blank" rel="noreferrer">打开原图</a>
+        <a href="${originalSrc}" target="_blank" rel="noreferrer">打开原图</a>
       </figcaption>
     </figure>
   `;
@@ -2313,7 +2479,7 @@ function bindImageViewer(root) {
     img.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      openImageViewer(img.currentSrc || img.src, img.alt || "帖子图片");
+      openImageViewer(img.dataset.originSrc || img.currentSrc || img.src, img.alt || "帖子图片");
     });
   });
 }
@@ -2452,6 +2618,9 @@ async function renderWorkReader() {
         <button type="button" class="action-pill ${detail.liked ? "active" : ""} ${state.auth?.token ? "" : "disabled"}" data-work-like>${state.auth?.token ? (detail.liked ? "已点赞" : "点赞") : "登录后点赞"} ${compactNumber(detail.likes)}</button>
         <button type="button" class="action-pill ${detail.collected ? "active" : ""} ${state.auth?.token ? "" : "disabled"}" data-work-collect>${state.auth?.token ? (detail.collected ? "已收藏" : "收藏") : "登录后收藏"} ${compactNumber(detail.collects)}</button>
         <button type="button" class="action-pill ${state.auth?.token ? "" : "disabled"}" data-focus-comment>${state.auth?.token ? "写评论" : "登录后评论"} ${compactNumber(detail.comments || totalComments)}</button>
+        <button type="button" class="action-pill" data-work-share>分享作品</button>
+        <span class="action-pill readonly">${compactNumber(detail.shares)} 分享</span>
+        <span class="action-pill readonly">${compactNumber(detail.forks)} 再创作</span>
       </div>
       <div class="work-editor-links">
         ${detail.editorEntries
@@ -2460,6 +2629,7 @@ async function renderWorkReader() {
           )
           .join("")}
       </div>
+      ${detail.createdAt ? `<p>${formatDate(detail.createdAt)} 发布</p>` : ""}
       <h3>作品简介</h3>
       <p>${escapeHtml(detail.description || "暂无介绍")}</p>
       ${detail.operation?.trim() ? `<h3>操作说明</h3><p>${escapeHtml(detail.operation)}</p>` : ""}
@@ -2494,6 +2664,33 @@ async function renderWorkReader() {
     const textarea = $("textarea[name='content']", root);
     textarea?.focus();
   });
+  $("[data-work-share]", root)?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    const shareUrl = detail.shareUrl || detail.originalUrl || (detail.id ? createWorkReaderUrl(detail) : location.href);
+    if (!shareUrl) return;
+    const title = detail.name || "Pickcat 作品";
+    const reset = (text = "分享作品") => {
+      button.disabled = false;
+      button.textContent = text;
+    };
+    button.disabled = true;
+    button.textContent = "分享中...";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text: `${title} · Pickcat`, url: shareUrl });
+        reset("已调用分享");
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        reset("链接已复制");
+      } else {
+        window.open(shareUrl, "_blank", "noopener,noreferrer");
+        reset("已打开分享页");
+      }
+    } catch {
+      reset("分享失败");
+    }
+    setTimeout(() => reset(), 1600);
+  });
   $("[data-follow-author]", root)?.addEventListener("click", async (event) => {
     if (!state.auth?.token) {
       navigateLocal("login");
@@ -2501,14 +2698,16 @@ async function renderWorkReader() {
     }
     const button = event.currentTarget;
     const next = !detail.author.followed;
+    const prevFollowers = Number(detail.author.stats?.followers || 0);
     button.disabled = true;
     button.classList.toggle("active", next);
-      button.textContent = next ? "已关注" : "关注";
-    detail.author.followed = next;
+    button.textContent = next ? "已关注" : "关注";
+    applyFollowChange(detail.author, next);
     try {
       await api.toggleFollowUser(detail.author.id, next);
     } catch (error) {
-      detail.author.followed = !next;
+      detail.author.stats = { ...(detail.author.stats || {}), followers: prevFollowers };
+      applyFollowChange(detail.author, !next);
       button.classList.toggle("active", !next);
       button.textContent = !next ? "已关注" : "关注";
       button.title = error.message;
@@ -2835,15 +3034,19 @@ async function renderUserReader() {
     }
     const button = event.currentTarget;
     const next = !user.followed;
-    user.followed = next;
+    const prevFollowers = Number(user.stats?.followers || 0);
+    const followerCount = root.querySelector(".user-stat-strip span:nth-child(2) strong");
+    applyFollowChange(user, next);
+    if (followerCount) followerCount.textContent = compactNumber(user.stats?.followers);
     button.classList.toggle("active", next);
     button.textContent = next ? "已关注" : "关注";
     button.disabled = true;
     try {
       await api.toggleFollowUser(id, next);
-      cacheUser(user);
     } catch (error) {
-      user.followed = !next;
+      user.stats = { ...(user.stats || {}), followers: prevFollowers };
+      applyFollowChange(user, !next);
+      if (followerCount) followerCount.textContent = compactNumber(user.stats?.followers);
       button.classList.toggle("active", !next);
       button.textContent = !next ? "已关注" : "关注";
       button.title = error.message;
@@ -2902,6 +3105,11 @@ function messageTypeLabel(type = "") {
     WORK_REPLY: "作品回复",
     REPLY_COMMENT: "评论回复",
     LIKE_FORK: "点赞",
+    WORK_LIKE: "作品点赞",
+    COMMENT_LIKE: "评论点赞",
+    REPLY_LIKE: "回复点赞",
+    WORK_COLLECT: "收藏",
+    FOLLOW: "关注",
     SYSTEM: "系统",
     system: "系统",
     comment: "评论",
@@ -2922,10 +3130,14 @@ function readableMessageText(value) {
     data.content,
     data.text,
     data.body,
+    data.summary,
+    data.reason,
     message && typeof message === "object" ? message.comment : "",
     message && typeof message === "object" ? message.reply : "",
     message && typeof message === "object" ? message.content : "",
-    message && typeof message === "object" ? message.text : ""
+    message && typeof message === "object" ? message.text : "",
+    message && typeof message === "object" ? message.summary : "",
+    message && typeof message === "object" ? message.reason : ""
   ];
 
   for (const candidate of candidates) {
@@ -2984,11 +3196,16 @@ function messageTarget(content, item) {
     readMessageId([item.work_id, item.target_id, item.resource_id, content.work_id, content.business_id, content.source_id, content.resource_id, message?.work_id, message?.business_id, message?.source_id, message?.target_id]) ||
     readMessageId([url.match(/work\/(\d+)/)?.[1]]);
   const replyId = readMessageId([item.reply_id, item.comment_id, content.reply_id, content.comment_id, content.source_id, message?.reply_id, message?.comment_id, message?.source_id]);
+  const userId =
+    readMessageId([item.user_id, item.target_user_id, content.user_id, content.target_user_id, content.sender?.id, message?.user_id, message?.target_user_id, message?.sender?.id]) ||
+    readMessageId([url.match(/user\/(\d+)/)?.[1]]);
 
   if (type.includes("WORK") && workId) return { view: "work", id: workId, anchorId: replyId };
   if ((type.includes("POST") || type.includes("REPLY") || type.includes("COMMENT")) && postId) return { view: "detail", id: postId, anchorId: replyId };
   if (workId) return { view: "work", id: workId, anchorId: replyId };
   if (postId) return { view: "detail", id: postId, anchorId: replyId };
+  if (userId) return { view: "user", id: userId };
+  if (url) return { view: "external", url };
   return null;
 }
 
@@ -3001,7 +3218,7 @@ function createMessageCard(item) {
   const sender = messageSender(content, item);
   const title = messageTitle(content, item);
   const body = readableMessageText(content) || apiText(item.summary || "");
-  const avatar = sender.avatar_url || sender.avatar || "";
+  const avatar = proxyMediaUrl(sender.avatar_url || sender.avatar || "");
   const nickname = sender.nickname || sender.name || "社区消息";
   const senderId = sender.id || sender.user_id || item.user_id || "";
   const date = formatDate(item.created_at || item.create_time || content.created_at);
@@ -3013,7 +3230,7 @@ function createMessageCard(item) {
     <div class="message-main">
       <div class="message-head">${senderId ? `<button type="button" class="user-inline-btn" data-message-user="${senderId}"><strong>${nickname}</strong></button>` : `<strong>${nickname}</strong>`}<span>${messageTypeLabel(item.type)}</span></div>
       <p>${apiText(body || "暂无消息内容")}</p>
-      <div class="message-meta">${title}${date ? ` · ${date}` : ""}${target ? " · 点击查看原文" : ""}</div>
+      <div class="message-meta">${title}${date ? ` · ${date}` : ""}${target ? ` · ${target.view === "external" ? "打开原链接" : "点击查看原文"}` : ""}</div>
     </div>
   `;
   $("[data-message-user]", card)?.addEventListener("click", (event) => {
@@ -3031,6 +3248,14 @@ function createMessageCard(item) {
       if (target.view === "work") {
         state.pendingWorkCommentId = target.anchorId || "";
         openWorkReader({ id: target.id });
+        return;
+      }
+      if (target.view === "user") {
+        openUserReader({ id: target.id });
+        return;
+      }
+      if (target.view === "external" && target.url) {
+        window.open(target.url, "_blank", "noopener,noreferrer");
       }
     });
   }
@@ -3068,7 +3293,7 @@ function cleanRenderedMessageCard(card, item) {
   if (sender.avatar_url && avatar?.tagName === "DIV") {
     const img = document.createElement("img");
     img.className = "mini-avatar-img";
-    img.src = sender.avatar_url;
+    img.src = proxyMediaUrl(sender.avatar_url);
     img.alt = "";
     avatar.replaceWith(img);
   }
@@ -3273,6 +3498,7 @@ function bindEvents() {
 }
 
 async function init() {
+  applyRuntimeShellMode();
   hydrateNativeSession();
   bindEvents();
   renderHistory();

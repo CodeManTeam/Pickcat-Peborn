@@ -38,6 +38,41 @@ createServer(async (request, response) => {
   };
   const proxyPrefix = Object.keys(proxyHosts).find((prefix) => url.pathname.startsWith(prefix));
 
+  if (url.pathname === "/proxy/media") {
+    const target = url.searchParams.get("url") || "";
+    if (!/^https?:\/\//i.test(target)) {
+      response.writeHead(400, {
+        "content-type": "text/plain; charset=utf-8",
+        "access-control-allow-origin": "*"
+      });
+      response.end("Bad media url");
+      return;
+    }
+    try {
+      const upstreamResponse = await fetch(target, {
+        headers: {
+          "user-agent": "Pickcat-Reborn/0.1",
+          accept: request.headers.accept || "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+          referer: "https://shequ.codemao.cn/"
+        }
+      });
+      const body = await upstreamResponse.arrayBuffer();
+      response.writeHead(upstreamResponse.status, {
+        "content-type": upstreamResponse.headers.get("content-type") || "application/octet-stream",
+        "access-control-allow-origin": "*",
+        "cache-control": "public, max-age=86400"
+      });
+      response.end(Buffer.from(body));
+    } catch (error) {
+      response.writeHead(502, {
+        "content-type": "text/plain; charset=utf-8",
+        "access-control-allow-origin": "*"
+      });
+      response.end(`Media proxy failed: ${String(error)}`);
+    }
+    return;
+  }
+
   if (proxyPrefix) {
     const upstreamPath = url.pathname.replace(proxyPrefix.slice(0, -1), "");
     const upstream = `${proxyHosts[proxyPrefix]}${upstreamPath}${url.search}`;
