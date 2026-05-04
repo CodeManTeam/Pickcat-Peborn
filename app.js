@@ -56,6 +56,7 @@ const oldsquawTools = [
     desc: "已随 Pickcat 打包 BetterNemo 工作区、扩展、主题和加载器资源，直接在软件内启动。",
     url: "public/tools/oldsquaw/better-nemo/index.html",
     fallbackUrl: oldsquawLinks.betterNemo,
+    updateUrl: oldsquawLinks.betterNemo,
     icon: ASSETS.betterNemo,
     tone: "blue",
     integration: "local-static",
@@ -68,6 +69,7 @@ const oldsquawTools = [
     desc: "已随 Pickcat 打包 CoCo-Oldsquaw 静态站，直接在软件内启动编辑器。",
     url: "public/tools/oldsquaw/coco/index.html",
     fallbackUrl: oldsquawLinks.cocoPro,
+    updateUrl: oldsquawLinks.cocoPro,
     icon: ASSETS.cocoPro,
     tone: "green",
     integration: "local-static"
@@ -79,6 +81,7 @@ const oldsquawTools = [
     desc: "已内置 KN-Oldsquaw 静态入口，用本地 HTML 承接 KittenN 镜像体验。",
     url: "public/tools/oldsquaw/kn/1.0.2.html",
     fallbackUrl: oldsquawLinks.kn,
+    updateUrl: oldsquawLinks.kn,
     icon: ASSETS.kn,
     tone: "yellow",
     integration: "local-static"
@@ -90,6 +93,7 @@ const oldsquawTools = [
     desc: "已内置 Oldsquaw Widget Editor，面向 CoCo 自定义控件编辑。",
     url: "public/tools/oldsquaw/widget-editor/1.0.0.html",
     fallbackUrl: oldsquawLinks.widgetEditor,
+    updateUrl: oldsquawLinks.widgetEditor,
     icon: ASSETS.photo,
     tone: "pink",
     integration: "local-static"
@@ -2900,7 +2904,11 @@ async function renderWorkReader() {
             ? `<div class="player-overlay">
                 <button type="button" data-start-player>${escapeHtml(detail.playerStartLabel || "内嵌播放")}</button>
                 <span>${escapeHtml(detail.playerHint || "若黑屏，请使用下方播放器入口")}</span>
-              </div>`
+              </div>
+              <button class="work-fullscreen-btn" type="button" data-work-fullscreen-toggle aria-label="全屏播放">
+                <span class="fs-expand"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg></span>
+                <span class="fs-shrink"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l-3 3M12 4l3 3M4 12l-3-3M12 12l3-3"/></svg></span>
+              </button>`
             : ""
         }
       </div>
@@ -2977,7 +2985,22 @@ async function renderWorkReader() {
     const stage = $("[data-player-stage]", root);
     setNativePlayerMode(true);
     const src = detail.playerUrls?.[0] || detail.playerUrl;
-    stage.innerHTML = `<iframe title="${escapeHtml(detail.name)}" src="${src}" loading="lazy" allow="autoplay; fullscreen; gamepad; clipboard-read; clipboard-write" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-downloads"></iframe>`;
+    stage.innerHTML = `<button class="player-back-btn" type="button" aria-label="退出全屏"><img src="public/assets/pickcat/imoji_back.png" alt="" /></button><iframe title="${escapeHtml(detail.name)}" src="${src}" loading="lazy" allow="autoplay; fullscreen; gamepad; clipboard-read; clipboard-write" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-downloads"></iframe>`;
+    const backBtn = $(".player-back-btn", stage);
+    backBtn?.addEventListener("click", () => {
+      setNativePlayerMode(false);
+      renderWorkReader();
+    });
+  });
+  $("[data-work-fullscreen-toggle]", root)?.addEventListener("click", () => {
+    const isFullscreen = document.body.classList.contains("player-landscape");
+    if (isFullscreen) {
+      setNativePlayerMode(false);
+      renderWorkReader();
+    } else {
+      const startBtn = $("[data-start-player]", root);
+      if (startBtn) startBtn.click();
+    }
   });
   $("[data-focus-comment]", root)?.addEventListener("click", () => {
     const textarea = $("textarea[name='content']", root);

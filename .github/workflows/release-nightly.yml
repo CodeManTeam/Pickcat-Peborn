@@ -163,7 +163,13 @@ jobs:
 
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release edit "$tag" --title "$title" --notes "$notes" --prerelease
-            gh release upload "$tag" "${upload_files[@]}" --clobber
+            for i in 1 2 3; do
+              if gh release upload "$tag" "${upload_files[@]}" --clobber; then
+                break
+              fi
+              echo "Upload attempt $i failed, retrying in 10s..."
+              sleep 10
+            done
           else
             gh release create "$tag" "${upload_files[@]}" --title "$title" --notes "$notes" --prerelease
           fi

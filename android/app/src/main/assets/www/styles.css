@@ -931,6 +931,44 @@ body.native-wrapper .topbar {
   gap: 8px;
 }
 
+.mine-footer {
+  margin-top: 24px;
+  padding: 20px 0 32px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.mine-footer section {
+  margin-bottom: 18px;
+}
+
+.mine-footer h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.mine-footer p {
+  margin: 0 0 4px;
+}
+
+.mine-footer a {
+  color: var(--blue);
+}
+
+.mine-legal {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.mine-legal p {
+  font-size: 12px;
+  color: #999;
+}
+
 .profile-actions {
   display: flex;
   flex-wrap: wrap;
@@ -2483,6 +2521,37 @@ body.tool-fullscreen .tool-fullscreen-btn {
 
 body.tool-fullscreen .tool-fullscreen-btn .fs-expand { display: none; }
 body.tool-fullscreen .tool-fullscreen-btn .fs-shrink { display: block; }
+
+.work-fullscreen-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 25;
+  border: 0;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.work-fullscreen-btn svg {
+  stroke: #fff;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.work-fullscreen-btn .fs-shrink { display: none; }
+.work-fullscreen-btn .fs-expand { display: block; }
+
+body.player-landscape .work-fullscreen-btn { display: none; }
 
 .user-reader-hero {
   position: relative;
