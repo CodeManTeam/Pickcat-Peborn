@@ -56,6 +56,7 @@ const oldsquawTools = [
     desc: "已随 Pickcat 打包 BetterNemo 工作区、扩展、主题和加载器资源，直接在软件内启动。",
     url: "public/tools/oldsquaw/better-nemo/index.html",
     fallbackUrl: oldsquawLinks.betterNemo,
+    updateUrl: oldsquawLinks.betterNemo,
     icon: ASSETS.betterNemo,
     tone: "blue",
     integration: "local-static",
@@ -68,6 +69,7 @@ const oldsquawTools = [
     desc: "已随 Pickcat 打包 CoCo-Oldsquaw 静态站，直接在软件内启动编辑器。",
     url: "public/tools/oldsquaw/coco/index.html",
     fallbackUrl: oldsquawLinks.cocoPro,
+    updateUrl: oldsquawLinks.cocoPro,
     icon: ASSETS.cocoPro,
     tone: "green",
     integration: "local-static"
@@ -79,6 +81,7 @@ const oldsquawTools = [
     desc: "已内置 KN-Oldsquaw 静态入口，用本地 HTML 承接 KittenN 镜像体验。",
     url: "public/tools/oldsquaw/kn/1.0.2.html",
     fallbackUrl: oldsquawLinks.kn,
+    updateUrl: oldsquawLinks.kn,
     icon: ASSETS.kn,
     tone: "yellow",
     integration: "local-static"
@@ -90,6 +93,7 @@ const oldsquawTools = [
     desc: "已内置 Oldsquaw Widget Editor，面向 CoCo 自定义控件编辑。",
     url: "public/tools/oldsquaw/widget-editor/1.0.0.html",
     fallbackUrl: oldsquawLinks.widgetEditor,
+    updateUrl: oldsquawLinks.widgetEditor,
     icon: ASSETS.photo,
     tone: "pink",
     integration: "local-static"
