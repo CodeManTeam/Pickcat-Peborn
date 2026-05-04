@@ -62,6 +62,9 @@ out/
 Thumbs.db
 desktop.ini
 
+# Claude Code
+.claude/
+
 # IDE files
 .idea/
 .vscode/
