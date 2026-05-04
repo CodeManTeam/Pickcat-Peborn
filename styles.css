@@ -2121,6 +2121,107 @@ body.native-wrapper .topbar {
   font-size: 12px;
 }
 
+.oldsquaw-zone {
+  margin: 4px 0 18px;
+}
+
+.oldsquaw-spotlight {
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  padding: 16px 0;
+  background: #fff;
+}
+
+.oldsquaw-spotlight .section-head {
+  margin: 0 0 12px;
+}
+
+.oldsquaw-spotlight .section-head > div {
+  min-width: 0;
+}
+
+.oldsquaw-spotlight .section-head p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.oldsquaw-tool-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(190px, 1fr));
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x proximity;
+}
+
+.oldsquaw-tool-card {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 112px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 11px;
+  color: var(--ink);
+  text-decoration: none;
+  background: #f8fafc;
+  scroll-snap-align: start;
+}
+
+.oldsquaw-tool-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: #eaf2ff;
+}
+
+.oldsquaw-tool-card.tone-green .oldsquaw-tool-icon {
+  background: #e9f8f1;
+}
+
+.oldsquaw-tool-card.tone-yellow .oldsquaw-tool-icon {
+  background: #fff5dc;
+}
+
+.oldsquaw-tool-card.tone-pink .oldsquaw-tool-icon {
+  background: #fff0f5;
+}
+
+.oldsquaw-tool-icon img {
+  max-width: 34px;
+  max-height: 34px;
+  object-fit: contain;
+}
+
+.oldsquaw-tool-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.oldsquaw-tool-copy em {
+  color: var(--blue);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.oldsquaw-tool-copy strong {
+  overflow-wrap: anywhere;
+  font-size: 15px;
+}
+
+.oldsquaw-tool-copy span {
+  color: #596273;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .user-recommend-card {
   display: grid;
   grid-template-columns: 58px minmax(0, 1fr);
@@ -2455,6 +2556,18 @@ body.native-wrapper .topbar {
   color: #6a6f7d;
   text-decoration: none;
   font-size: 15px;
+}
+
+.sheet-item span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.sheet-item.partner-tool span:last-child {
+  color: var(--blue);
+  font-weight: 800;
 }
 
 .sheet-item.disabled {

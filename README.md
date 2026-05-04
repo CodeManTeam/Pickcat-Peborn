@@ -73,6 +73,7 @@ pnpm run android:build
 - 项目背景：[docs/pickcat-community-post.md](./docs/pickcat-community-post.md)
 - 接口映射：[docs/api-map.md](./docs/api-map.md)
 - 截图对比：[docs/current-vs-reference.md](./docs/current-vs-reference.md)
+- Oldsquaw 合作：[docs/oldsquaw-integration.md](./docs/oldsquaw-integration.md)
 - 展示文章：[pickcat-story.md](./pickcat-story.md)
 - 发版说明：[RELEASE.md](./RELEASE.md)
 - 许可说明：[LICENSE.md](./LICENSE.md)

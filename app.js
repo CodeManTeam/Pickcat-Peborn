@@ -15,6 +15,8 @@ const ASSETS = {
   searchEmpty: "public/assets/pickcat/ic_empty_search.png",
   photo: "public/assets/pickcat/ic_photo.png",
   video: "public/assets/pickcat/ic_video.png",
+  nemo: "public/assets/pickcat/nemo.png",
+  kitten: "public/assets/pickcat/kitten.png",
   moreMenu: "public/assets/pickcat/ic_more_mine_black.png",
   back: "public/assets/pickcat/imoji_back.png",
   settings: "public/assets/pickcat/imoji_menu_settings.png"
@@ -29,6 +31,50 @@ const apiConfig = {
 const feedPageSize = 8;
 const userListPreviewSize = 6;
 const stackedViews = new Set(["search", "publish", "detail", "work", "user", "login"]);
+
+const oldsquawLinks = {
+  org: "https://gitee.com/oldsquaw",
+  website: "https://oldsquaw.rth1.xyz/",
+  betterNemo: "https://gitee.com/oldsquaw/better-nemo",
+  cocoPro: "https://gitee.com/oldsquaw/coco",
+  kn: "https://gitee.com/oldsquaw/kn-oldsquaw",
+  widgetEditor: "https://gitee.com/oldsquaw/oldsquaw-widget-editor"
+};
+
+const oldsquawTools = [
+  {
+    name: "BetterNemo",
+    tag: "Nemo 拓展",
+    desc: "更强的 Nemo 编辑器与播放器移植，适合作品再创作和移动端打开。",
+    url: oldsquawLinks.betterNemo,
+    icon: ASSETS.nemo,
+    tone: "blue"
+  },
+  {
+    name: "CoCo Pro",
+    tag: "CoCo 魔改",
+    desc: "集成界面美化、宽屏适配、控件商城、AI CoCo 鸭和协作能力。",
+    url: oldsquawLinks.cocoPro,
+    icon: ASSETS.appLogo,
+    tone: "green"
+  },
+  {
+    name: "KN-Oldsquaw",
+    tag: "KittenN 镜像",
+    desc: "KittenN 镜像和 Oldsquaw 拓展项目，补足 KN 作品打开入口。",
+    url: oldsquawLinks.kn,
+    icon: ASSETS.kitten,
+    tone: "yellow"
+  },
+  {
+    name: "控件编辑器",
+    tag: "AI 控件",
+    desc: "面向 CoCo 自定义控件的编辑入口，承接控件、扩展和教程投稿。",
+    url: oldsquawLinks.widgetEditor,
+    icon: ASSETS.photo,
+    tone: "pink"
+  }
+];
 
 const circleIconMap = {
   "3": ASSETS.codeIsland,
@@ -636,9 +682,16 @@ function engineMeta(work = {}, id = "") {
 
 function editorEntries(work = {}) {
   const meta = engineMeta(work, work.id);
+  const partnerEntries = [
+    meta.code === "nemo" ? { label: "BetterNemo", url: oldsquawLinks.betterNemo, disabled: false } : null,
+    meta.code === "kittenN" ? { label: "KN-Oldsquaw", url: oldsquawLinks.kn, disabled: false } : null,
+    { label: "CoCo Pro", url: oldsquawLinks.cocoPro, disabled: false },
+    { label: "控件编辑器", url: oldsquawLinks.widgetEditor, disabled: false }
+  ].filter(Boolean);
   return [
     { label: `${meta.label} 播放器`, url: work.playerUrls?.[0] || meta.workUrl || "", disabled: !(work.playerUrls?.[0] || meta.workUrl) },
     { label: `${meta.label} 主页`, url: meta.homeUrl || "", disabled: !meta.homeUrl },
+    ...partnerEntries,
     { label: "分享页", url: work.shareUrl || "", disabled: !work.shareUrl },
     { label: "社区原站", url: work.originalUrl || "", disabled: !work.originalUrl }
   ];
@@ -1222,6 +1275,40 @@ function statusCard(text, options = {}) {
   return node;
 }
 
+function createOldsquawToolCard(tool, { compact = false } = {}) {
+  const card = document.createElement("a");
+  card.className = `oldsquaw-tool-card tone-${tool.tone || "blue"}${compact ? " compact" : ""}`;
+  card.href = tool.url;
+  card.target = "_blank";
+  card.rel = "noreferrer";
+  card.innerHTML = `
+    <span class="oldsquaw-tool-icon"><img src="${tool.icon}" alt="" /></span>
+    <span class="oldsquaw-tool-copy">
+      <em>${escapeHtml(tool.tag)}</em>
+      <strong>${escapeHtml(tool.name)}</strong>
+      <span>${escapeHtml(tool.desc)}</span>
+    </span>
+  `;
+  return card;
+}
+
+function createOldsquawSpotlight(title = "Oldsquaw 创作工具精选", desc = "Pickcat 与 Oldsquaw 合并合作，Nemo、CoCo、KittenN 和 AI 控件入口会逐步统一。") {
+  const section = document.createElement("section");
+  section.className = "oldsquaw-spotlight";
+  section.innerHTML = `
+    <div class="section-head flush">
+      <div>
+        <h2>${escapeHtml(title)}</h2>
+        <p>${escapeHtml(desc)}</p>
+      </div>
+      <a class="text-btn" href="${oldsquawLinks.org}" target="_blank" rel="noreferrer">组织主页</a>
+    </div>
+    <div class="oldsquaw-tool-row"></div>
+  `;
+  $(".oldsquaw-tool-row", section).replaceChildren(...oldsquawTools.map((tool) => createOldsquawToolCard(tool)));
+  return section;
+}
+
 function loadingCard(text, title = "加载中") {
   return statusCard(text, { tone: "loading", title });
 }
@@ -1478,9 +1565,10 @@ async function loadMoreFeed() {
 function renderFeed() {
   if (state.feedTab === "discover") {
     if (!state.discoverLoaded && !state.discoverLoading) loadDiscoverWorks().then(renderFeed);
-    const nodes = state.discoverWorks.length
+    const nodes = [createOldsquawSpotlight("Oldsquaw 工具可打开更多作品", "发现页会优先展示作品，合作工具用于后续编辑、控件制作和再创作。")];
+    nodes.push(...(state.discoverWorks.length
       ? state.discoverWorks.map(createHomeWorkCard)
-      : [state.discoverLoading || !state.discoverLoaded ? loadingCard("正在读取发现作品...", "发现加载中") : statusCard("暂时没有发现作品")];
+      : [state.discoverLoading || !state.discoverLoaded ? loadingCard("正在读取发现作品...", "发现加载中") : statusCard("暂时没有发现作品")]));
     $("[data-feed]").replaceChildren(...nodes);
     updateFeedSentinel();
     renderMineFeed();
@@ -1495,6 +1583,7 @@ function renderFeed() {
     if (state.followingUsers.length) {
       nodes.push(createUserMiniSection("我关注的人", state.followingUsers, "暂时没有读取到关注列表"));
     }
+    nodes.push(createOldsquawSpotlight("Oldsquaw 合作动态入口", "这里会逐步接入 BetterNemo、CoCo Pro、AI 控件和团队成员动态。"));
     if ((!state.followingLoaded || state.followingLoading) && !data.length) {
       nodes.push(loadingCard("正在读取关注列表和动态作品...", "关注加载中"));
     } else if (data.length) {
@@ -1508,7 +1597,7 @@ function renderFeed() {
     return;
   }
   const data = state.posts;
-  const nodes = [];
+  const nodes = [createOldsquawSpotlight()];
   const requiredWorks = Math.ceil(data.length / 2);
   if (state.discoverWorks.length < requiredWorks && !state.discoverLoading && !state.discoverDone) {
     loadDiscoverWorks();
@@ -1791,6 +1880,13 @@ function renderCircles() {
       return item;
     })
   );
+
+  const oldsquawZone = $("[data-oldsquaw-zone]");
+  if (oldsquawZone) {
+    oldsquawZone.replaceChildren(
+      createOldsquawSpotlight("Oldsquaw 合作专区", "AI 控件、CoCo 魔改、Nemo 拓展和 KittenN 镜像会作为 Pickcat 创作生态的一部分继续合并。")
+    );
+  }
 
   $("[data-circles]").replaceChildren(
     ...state.boards.map((circle) => {
