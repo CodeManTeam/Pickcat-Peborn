@@ -68,7 +68,7 @@ const oldsquawTools = [
     desc: "已随 Pickcat 打包 CoCo-Oldsquaw 静态站，直接在软件内启动编辑器。",
     url: "public/tools/oldsquaw/coco/index.html",
     fallbackUrl: oldsquawLinks.cocoPro,
-    icon: ASSETS.appLogo,
+    icon: ASSETS.cocoPro,
     tone: "green",
     integration: "local-static"
   },
