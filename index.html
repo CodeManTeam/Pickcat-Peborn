@@ -142,7 +142,12 @@
             </div>
             <div class="chips" data-history></div>
           </section>
-          <div class="feed compact" data-search-results></div>
+          <nav class="tabs search-tabs hidden" aria-label="搜索结果分类" data-search-tabs>
+            <button class="tab active" type="button" data-search-tab="posts">帖子</button>
+            <button class="tab" type="button" data-search-tab="works">作品</button>
+          </nav>
+          <div class="feed compact" data-search-results-posts></div>
+          <div class="feed compact hidden" data-search-results-works></div>
         </section>
 
         <section class="view" id="detail-view" data-view="detail">

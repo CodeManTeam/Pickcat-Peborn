@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>切片</title>
+    <g id="硬件连接" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="0.600000024">
+        <g id="1.2.已添加硬件积木并连接" transform="translate(-531.000000, -14.000000)">
+            <g id="编组-2" transform="translate(525.000000, 10.000000)">
+                <g id="icn_bluetooth" transform="translate(6.000000, 4.000000)">
+                    <rect id="矩形" fill="#D8D8D8" opacity="0" x="0" y="0" width="16" height="16"></rect>
+                    <polygon id="矩形" stroke="#6AE566" fill="#6AE566" stroke-linejoin="round" points="8 2 12 5 8 8"></polygon>
+                    <polyline id="路径" stroke="#6AE566" stroke-linecap="round" stroke-linejoin="round" points="4 5 8 8 4 11"></polyline>
+                    <polygon id="矩形" stroke="#6AE566" fill="#6AE566" stroke-linejoin="round" points="8 8 12 11 8 14"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

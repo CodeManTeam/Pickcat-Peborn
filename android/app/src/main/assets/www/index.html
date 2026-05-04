@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#1677ff" />
     <title>Pickcat Reborn</title>
+    <link rel="icon" href="public/assets/pickcat/ic_home_logo.png" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -16,9 +17,6 @@
 
       <main class="app" aria-live="polite">
         <header class="topbar" data-topbar>
-          <button class="icon-btn ghost hidden" type="button" data-back aria-label="返回">
-            <img class="top-action-img back-img" src="public/assets/pickcat/imoji_back.png" alt="" />
-          </button>
           <h1 class="brand" data-title><img src="public/assets/pickcat/ic_home_logo.png" alt="PICKCAT" /></h1>
           <nav class="tabs topbar-tabs" aria-label="首页分类" data-home-tabs>
             <button class="tab active" type="button" data-feed-tab="recommend">推荐</button>
@@ -144,7 +142,12 @@
             </div>
             <div class="chips" data-history></div>
           </section>
-          <div class="feed compact" data-search-results></div>
+          <nav class="tabs search-tabs hidden" aria-label="搜索结果分类" data-search-tabs>
+            <button class="tab active" type="button" data-search-tab="posts">帖子</button>
+            <button class="tab" type="button" data-search-tab="works">作品</button>
+          </nav>
+          <div class="feed compact" data-search-results-posts></div>
+          <div class="feed compact hidden" data-search-results-works></div>
         </section>
 
         <section class="view" id="detail-view" data-view="detail">
@@ -191,6 +194,10 @@
               <a class="sheet-item partner-tool" href="#tool-better-nemo" data-open-tool="better-nemo">
                 <img src="public/assets/pickcat/nemo.png" alt="" />
                 <span>BetterNemo</span>
+              </a>
+              <a class="sheet-item partner-tool" href="#tool-better-nemo-pc" data-open-tool="better-nemo-pc">
+                <img src="public/assets/pickcat/nemo.png" alt="" />
+                <span>BetterNemoPC</span>
               </a>
               <a class="sheet-item" href="#tool-kitten" data-open-tool="kitten">
                 <img src="public/assets/pickcat/kitten.png" alt="" />
