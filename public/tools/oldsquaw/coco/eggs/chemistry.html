@@ -1,0 +1,30 @@
+<!--
+    * Copyright (c) 2023 xiaohong2022
+    * 特别鸣谢：
+    * 元素周期表：https://baijiahao.baidu.com/s?id=1646004099756400161
+    * CNChar：https://theajack.github.io/cnchar/
+-->
+<script src="https://fastly.jsdelivr.net/npm/cnchar-all/cnchar.all.min.js"></script>
+<script src="https://fastly.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+<textarea placeholder="加密前的内容" class="i1" rows="10"></textarea>
+<textarea placeholder="加密后的内容" readonly class="i2" rows="10"></textarea>
+<script>
+    $(function () {
+        // 非全部元素中文名（因为有些字打不出来）
+        const text = '氢氦锂铍硼碳氮氧氟氖钠镁铝硅磷硫氯氩钾钙钪钛钒铬锰铁钴镍铜锌镓锗砷硒溴氪铷锶钇锆铌钼锝钌铑钯银镉铟锡锑碲碘氙铯钡镧铈镨钕钷钐铕钆铽镝钬铒铥镱镥铪钽钨铼锇铱铂金汞铊铅铋钋砹氡钫镭锕钍镤铀镎钚镅锔锫锎锿镄钔锘铹镆';
+        const text_spell = cnchar.spell(text, 'low', 'array'); // 转换成拼音
+
+        const input1 = $(".i1");
+        const input2 = $(".i2");
+
+        input1.on("input", function () {
+            const value = input1.val();
+            const value_spell = cnchar.spell(value, 'low', 'array'); // 转换成拼音
+            const changed = value_spell.map((spell, index) => text[text_spell.indexOf(spell)] || value[index]);
+
+            console.log(value_spell);
+
+            input2.val(changed.join(""));
+        })
+    })
+</script>

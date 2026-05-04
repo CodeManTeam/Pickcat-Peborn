@@ -1,0 +1,575 @@
+<!--
+    Coco 点鸭赛事版，由 Oldsquaw 制作，特别鸣谢：冷鱼闲风
+-->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="CoCoPro 赛事版" />
+    <meta name="keywords" content="App 工匠，App Craft, AppCraft, codemao, 编程猫, CoCo" />
+    <meta name="environment" content="production" />
+    <title>CoCoPro 赛事版</title>
+    <link rel="icon" href="https://coco.codemao.cn/favicon.ico" />
+    <link href="https://creation.codemao.cn/coconut/web/1.21.0/static/css/0.a3c8f76e.chunk.css" rel="stylesheet">
+    <link href="https://creation.codemao.cn/coconut/web/1.21.0/static/css/main.4c7384da.chunk.css" rel="stylesheet">
+</head>
+
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="loading"></div>
+    <div id="root"></div>
+
+    <style>
+        .Header_projectTitleWrapper__2Fwje,
+        .Header_cloudIconWrapper__1urcN {
+            display: none;
+        }
+
+        .Header_right__3m7KF {
+            visibility: hidden;
+        }
+
+        .Header_center__3KSi7 {
+            gap: 10px;
+        }
+
+        .Header_back__wpziz {
+            visibility: hidden;
+            width: 5px;
+        }
+
+        .Header_logoBox__2YR-s {
+            pointer-events: none;
+        }
+
+        .Header_center__3KSi7 .coco-button {
+            width: 75px;
+            margin-right: 0;
+        }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999999999;
+        }
+    </style>
+    <script>
+        // 禁止CoCo内部脚本修改URL路径
+        !(function () {
+            var x = history.pushState;
+            history.pushState = function (data, unused, url) {
+                if (url.startsWith('/editor/')) return;
+                x.apply(this, [data, unused, url]);
+            };
+            var y = history.replaceState;
+            history.replaceState = function (data, unused, url) {
+                if (url.startsWith('/editor/')) return;
+                y.apply(this, [data, unused, url]);
+            };
+        })();
+        document.addEventListener("DOMContentLoaded", () => {
+
+            function replaceTextInIframes() {
+                const iframeElements = document.querySelectorAll("iframe");
+
+                iframeElements.forEach(iframe => {
+                    if (iframe.COCOMSPS) return;
+                    if (iframe.temp) return;
+                    const iframeSrc = iframe.getAttribute("src");
+                    if (iframeSrc && iframeSrc.includes("editor/")) {
+                        const newSrc = iframeSrc.replace("/editor/", "https://coco.codemao.cn/editor/");
+                        iframe.src = newSrc;
+                        iframe.temp = true;
+                    }
+                });
+            }
+
+            setInterval(replaceTextInIframes, 100);
+        });
+
+        !function () {
+            var y = window.fetch;
+            var loading = false;
+            window.fetch = function (input, init) {
+                var url = input;
+                if (input.includes("/editor/service/compile")) {
+                    if (loading) return;
+                    loading = true;
+
+                    var x1 = document.createElement("div");
+
+                    x1.innerHTML = `
+<div class="CommonToast_wrapper__1vp1G coco-alert hide">
+    <div class="coco-alert-content">
+        <div class="coco-alert-icon">
+            <i class="coco-iconfont">
+                <svg width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" style="
+                    color: #6e4ff4;
+                    -webkit-animation: style_spinner__1EcrQ 1.5s linear infinite; 
+                    animation: style_spinner__1EcrQ 1.5s linear infinite;
+                ">
+                    <use xlink:href="#icon-loading2"></use>
+                </svg>
+            </i>
+        </div>
+        <span>正在加载预览</span>
+        <a style="color: #6e4ff4; margin-left: 10px;">取消</a>
+    </div>
+</div>`
+                    document.body.append(x1);
+
+                    setTimeout(() => {
+                        x1.querySelector('.hide').classList.remove('hide')
+                    }, 17);
+
+                    let examineInterval, loaded = false;
+                    let cancel = false;
+                    x1.querySelector('a').addEventListener('click', function () {
+                        cancel = true;
+                        loading = false;
+                        x1.remove();
+                        x.remove();
+                        clearInterval(examineInterval);
+                    });
+
+                    return new Promise((r) => {
+                        var x = document.createElement("iframe");
+                        x.src = "https://coco.codemao.cn/editor/player/0";
+                        x.style.cssText = "position:fixed;top:0;left:0;z-index:0;pointer-events:none;visibility:hidden;"
+                        x.COCOMSPS = true;
+
+                        var id = `JSON${Date.now()}${~~(Math.random() * 1e7)}`;
+                        window[`PreviewCallback${id}`] = function (error = false) {
+                            if (error) {
+                                console.log('预览失败，重试ing')
+                                loaded = false;
+                                return;
+                            }
+                            x1.remove();
+                            x.remove();
+                            clearInterval(examineInterval);
+                            loaded = true;
+
+                            if (!cancel) {
+                                cancel = true;
+                                loading = false;
+                                console.log('部署完毕');
+                                r({});
+                            };
+                        };
+                        window[`PreviewContent${id}`] = init.body;
+
+                        examineInterval = setInterval(() => {
+                            let iframeDocument = (x.contentDocument || x.contentWindow.document);
+                            if (
+                                iframeDocument.documentURI == 'https://coco.codemao.cn/editor/player/0'
+                                &&
+                                iframeDocument.readyState == 'loading' || iframeDocument.readyState == 'complete'
+                                &&
+                                !loaded
+                            ) {
+                                loaded = true;
+                                console.log('预览注入成功，等待部署')
+                                x.contentWindow.eval(`
+                        fetch("https://coco.codemao.cn/editor/service/compile",{method:"POST",body:window.top.PreviewContent${id}})
+                        .then(()=>{window.top.PreviewCallback${id}()},()=>{window.top.PreviewCallback${id}(true)})
+                        `);
+                            }
+                        }, 75);
+
+                        // x.onload = function () {
+                        //     clearInterval(examineInterval);
+                        // };
+
+                        document.body.appendChild(x);
+                    })
+                }
+                return y(url, init);
+            }
+        }()
+
+        !function () {
+            let getProjectData = null;
+
+            let alertTimeout = null;
+            function showAlert(icon, text) {
+                const alert = document.querySelector('.coco-alert')
+                alert.querySelector('.coco-alert-icon use').setAttribute('xlink:href', '#icon-alert-' + icon)
+                alert.querySelector('span').innerText = text;
+                alert.className = `CommonToast_wrapper__1vp1G coco-alert coco-alert-${icon}`;
+                clearTimeout(alertTimeout)
+                alertTimeout = setTimeout(() => {
+                    alert.classList.add('hide');
+                }, 3000);
+            }
+
+            // 加载完毕
+            window.addEventListener('load', function () {
+                const th = new URLSearchParams(location.search).get('th')
+
+                // 删除元素
+                document.querySelectorAll(
+                    [
+                        '.Header_fileDropdown__3MYW_ .coco-popover-content > div > div > div:nth-child(1)',
+                        '.Header_fileDropdown__3MYW_ .coco-popover-content > div > div > div:nth-child(2)',
+                        '.Header_fileDropdown__3MYW_ .coco-popover-content > div > div > div:nth-child(3)',
+                        '.Header_fileDropdown__3MYW_ .coco-popover-content > div > div > div:nth-child(4)',
+                        '.Header_fileDropdown__3MYW_ .coco-popover-content > div > div > div:nth-child(5)',
+                        'div.Header_menu__Zy7KP > div:nth-child(2)',
+                        '#loading'
+                    ].join(',')
+                ).forEach(e => e.parentElement.removeChild(e));
+
+                const headerCenter = document.querySelector('.Header_center__3KSi7');
+
+                // 添加提交按钮
+                const commitBtn = document.createElement('button');
+                commitBtn.className = 'coco-button coco-button-circle Header_saveBtn__IhQCn ';
+                commitBtn.innerHTML = `<span class="Header_saveText__31lXM">提交</span><span class="Header_savingIcon__30nr4"><svg class="Spinner_spinner__1Nh-g" viewBox="0 0 50 50"><circle class="Spinner_spinnerPath__2LlP3" cx="25" cy="25" r="20" fill="none" stroke-width="6" stroke="#6e4ff4"></circle></svg></span>`;
+                commitBtn.addEventListener('click', function () {
+                    if (getProjectData) {
+                        commitBtn.classList.add('Header_saving__3Q1k_');
+
+                        // 获取作品数据
+                        getProjectData().then(data => {// 获取成功
+                            // 发送数据
+                            try {
+                                window.parent.postMessage({
+                                    "type": "contest_coco_commit",
+                                    "th": "#zs" + th,
+                                    "msg": data
+                                }, 'https://contest.pgaot.com/');
+
+                                showAlert('success', '提交成功')
+
+                                // 更新提交信息
+                                projectID.innerText = `题号：${th}，上次提交：${new Date().toLocaleTimeString()}`;
+                            }
+
+                            // 发送失败
+                            catch (e) {
+                                showAlert('error', '提交失败，请稍后重试')
+                            }
+
+                            commitBtn.classList.remove('Header_saving__3Q1k_');
+
+                        }).catch(() => { // 失败
+                            showAlert('error', '提交失败，请稍后重试')
+                            commitBtn.classList.remove('Header_saving__3Q1k_');
+                        })
+
+                    }
+                    else {
+                        showAlert('info', '提交程序初始化中，请稍后')
+                    }
+                })
+                headerCenter.appendChild(commitBtn);
+
+                // 显示当前题号
+                const projectID = document.createElement('span');
+                projectID.innerText = `题号：${th}，上次提交：无`;
+                headerCenter.appendChild(projectID);
+            })
+
+            // 这里使用了coco index.html下的webpack初始化脚本，格式化且稍有改动
+            !(function (e) {
+                function t(t) {
+                    const modules = t[1]; // 获取所有模块
+                    const backup = modules[99]
+                    if (backup) { // 如果存在99号模块
+                        modules[99] = function (a, b, c) {
+                            backup.apply(this, [a, b, c]);
+                            getProjectData = () => {
+                                return this['b']();
+                            };
+                        }
+                    }
+
+                    for (
+                        var n, o, u = t[0], f = t[1], i = t[2], l = 0, d = [];
+                        l < u.length;
+                        l++
+                    )
+                        (o = u[l]),
+                            Object.prototype.hasOwnProperty.call(a, o) && a[o] && d.push(a[o][0]),
+                            (a[o] = 0);
+                    for (n in f) Object.prototype.hasOwnProperty.call(f, n) && (e[n] = f[n]);
+                    for (s && s(t); d.length;) d.shift()();
+                    return c.push.apply(c, i || []), r();
+                }
+                function r() {
+                    for (var e, t = 0; t < c.length; t++) {
+                        for (var r = c[t], n = !0, o = 1; o < r.length; o++) {
+                            var f = r[o];
+                            0 !== a[f] && (n = !1);
+                        }
+                        n && (c.splice(t--, 1), (e = u((u.s = r[0]))));
+                    }
+                    return e;
+                }
+                var n = {},
+                    o = { 9: 0 },
+                    a = { 9: 0 },
+                    c = [];
+                function u(t) {
+                    if (n[t]) return n[t].exports;
+                    var r = (n[t] = { i: t, l: !1, exports: {} });
+                    return e[t].call(r.exports, r, r.exports, u), (r.l = !0), r.exports;
+                }
+                (u.e = function (e) {
+                    var t = [];
+                    o[e]
+                        ? t.push(o[e])
+                        : 0 !== o[e] &&
+                        { 12: 1 }[e] &&
+                        t.push(
+                            (o[e] = new Promise(function (t, r) {
+                                for (
+                                    var n =
+                                        "static/css/" +
+                                        ({}[e] || e) +
+                                        "." +
+                                        {
+                                            1: "31d6cfe0",
+                                            3: "31d6cfe0",
+                                            10: "31d6cfe0",
+                                            12: "80f34259",
+                                            13: "31d6cfe0",
+                                            14: "31d6cfe0",
+                                            15: "31d6cfe0",
+                                            16: "31d6cfe0",
+                                            17: "31d6cfe0",
+                                            18: "31d6cfe0",
+                                            19: "31d6cfe0",
+                                            20: "31d6cfe0",
+                                            21: "31d6cfe0",
+                                        }[e] +
+                                        ".chunk.css",
+                                    a = u.p + n,
+                                    c = document.getElementsByTagName("link"),
+                                    f = 0;
+                                    f < c.length;
+                                    f++
+                                ) {
+                                    var i =
+                                        (s = c[f]).getAttribute("data-href") || s.getAttribute("href");
+                                    if ("stylesheet" === s.rel && (i === n || i === a)) return t();
+                                }
+                                var l = document.getElementsByTagName("style");
+                                for (f = 0; f < l.length; f++) {
+                                    var s;
+                                    if ((i = (s = l[f]).getAttribute("data-href")) === n || i === a)
+                                        return t();
+                                }
+                                var d = document.createElement("link");
+                                (d.rel = "stylesheet"),
+                                    (d.type = "text/css"),
+                                    (d.onload = t),
+                                    (d.onerror = function (t) {
+                                        var n = (t && t.target && t.target.src) || a,
+                                            c = new Error(
+                                                "Loading CSS chunk " + e + " failed.\n(" + n + ")",
+                                            );
+                                        (c.code = "CSS_CHUNK_LOAD_FAILED"),
+                                            (c.request = n),
+                                            delete o[e],
+                                            d.parentNode.removeChild(d),
+                                            r(c);
+                                    }),
+                                    (d.href = a),
+                                    document.getElementsByTagName("head")[0].appendChild(d);
+                            }).then(function () {
+                                o[e] = 0;
+                            })),
+                        );
+                    var r = a[e];
+                    if (0 !== r)
+                        if (r) t.push(r[2]);
+                        else {
+                            var n = new Promise(function (t, n) {
+                                r = a[e] = [t, n];
+                            });
+                            t.push((r[2] = n));
+                            var c,
+                                f = document.createElement("script");
+                            (f.charset = "utf-8"),
+                                (f.timeout = 120),
+                                u.nc && f.setAttribute("nonce", u.nc),
+                                (f.src = (function (e) {
+                                    return (
+                                        u.p +
+                                        "static/js/" +
+                                        ({}[e] || e) +
+                                        "." +
+                                        {
+                                            1: "ecef4e18",
+                                            3: "49cf75d5",
+                                            10: "dcea8225",
+                                            12: "ea3faaa4",
+                                            13: "e41b4296",
+                                            14: "43f92637",
+                                            15: "b3bb5512",
+                                            16: "8f26a2b4",
+                                            17: "c41f66c0",
+                                            18: "fb093604",
+                                            19: "a106c140",
+                                            20: "a8adedfc",
+                                            21: "3edc8c0f",
+                                        }[e] +
+                                        ".chunk.js"
+                                    );
+                                })(e));
+                            var i = new Error();
+                            c = function (t) {
+                                (f.onerror = f.onload = null), clearTimeout(l);
+                                var r = a[e];
+                                if (0 !== r) {
+                                    if (r) {
+                                        var n = t && ("load" === t.type ? "missing" : t.type),
+                                            o = t && t.target && t.target.src;
+                                        (i.message =
+                                            "Loading chunk " + e + " failed.\n(" + n + ": " + o + ")"),
+                                            (i.name = "ChunkLoadError"),
+                                            (i.type = n),
+                                            (i.request = o),
+                                            r[1](i);
+                                    }
+                                    a[e] = void 0;
+                                }
+                            };
+                            var l = setTimeout(function () {
+                                c({ type: "timeout", target: f });
+                            }, 12e4);
+                            (f.onerror = f.onload = c), document.head.appendChild(f);
+                        }
+                    return Promise.all(t);
+                }),
+                    (u.m = e),
+                    (u.c = n),
+                    (u.d = function (e, t, r) {
+                        u.o(e, t) || Object.defineProperty(e, t, { enumerable: !0, get: r });
+                    }),
+                    (u.r = function (e) {
+                        "undefined" != typeof Symbol &&
+                            Symbol.toStringTag &&
+                            Object.defineProperty(e, Symbol.toStringTag, { value: "Module" }),
+                            Object.defineProperty(e, "__esModule", { value: !0 });
+                    }),
+                    (u.t = function (e, t) {
+                        if ((1 & t && (e = u(e)), 8 & t)) return e;
+                        if (4 & t && "object" == typeof e && e && e.__esModule) return e;
+                        var r = Object.create(null);
+                        if (
+                            (u.r(r),
+                                Object.defineProperty(r, "default", { enumerable: !0, value: e }),
+                                2 & t && "string" != typeof e)
+                        )
+                            for (var n in e)
+                                u.d(
+                                    r,
+                                    n,
+                                    function (t) {
+                                        return e[t];
+                                    }.bind(null, n),
+                                );
+                        return r;
+                    }),
+                    (u.n = function (e) {
+                        var t =
+                            e && e.__esModule
+                                ? function () {
+                                    return e.default;
+                                }
+                                : function () {
+                                    return e;
+                                };
+                        return u.d(t, "a", t), t;
+                    }),
+                    (u.o = function (e, t) {
+                        return Object.prototype.hasOwnProperty.call(e, t);
+                    }),
+                    (u.p = "https://creation.codemao.cn/coconut/web/1.21.0/"),
+                    (u.oe = function (e) {
+                        throw (console.error(e), e);
+                    });
+                var f = (this.webpackJsonpappcraft = this.webpackJsonpappcraft || []),
+                    i = f.push.bind(f);
+                (f.push = t), (f = f.slice());
+                for (var l = 0; l < f.length; l++) t(f[l]);
+                var s = i;
+                r();
+            })([]);
+        }();
+
+        /* CoCoClick v1.0.3 Copyright (C) 2023 xiaohong2022 */
+        (function () {
+            'use strict';
+            var play = { setData(n, v) { this[n] = v }, getData(n) { return this[n] } }
+            setInterval(() => {
+                document.querySelectorAll(`*[class*="WidgetList_widgetItem"]`).forEach(e => {
+                    if (e.cococlick) return;
+                    e.cococlick = true;
+                    e.style.cursor = "pointer";
+                    e.addEventListener("click", function () {
+                        var sen = document.querySelector(`*[class*="PreviewArea_main"]`);
+                        var x = sen.offsetLeft + sen.offsetWidth / 2;
+                        var y = sen.offsetTop + sen.offsetHeight / 2;
+                        var keys = Object.keys(e);
+                        var key = keys.find(e => e.startsWith("__reactEventHandlers"));
+                        e[key].onDragStart({ target: e, dataTransfer: play, persist() { return true }, clientX: x, clientY: y, x: x + 100, y })
+                        var stage = document.querySelector(`*[class*="PreviewArea_stage"]`);
+                        var keys2 = Object.keys(stage);
+                        var key2 = keys2.find(e => e.startsWith("__reactEventHandlers"));
+                        stage[key2].onDragOver({ preventDefault() { } })
+                        stage[key2].onDrop({ dataTransfer: play, persist() { return true }, clientX: x + 142, clientY: y - 3, x: x + 100, y })
+                        if (e.dataset.widgetType == "BRUSH_WIDGET" || e.dataset.widgetType == "ACTOR_WIDGET") {
+                            document.querySelectorAll(`*[data-widget-type="CANVAS_WIDGET"][id*="CANVAS_WIDGET"]`).forEach((en, index, array) => {
+                                var keys3 = Object.keys(en);
+                                var key3 = keys3.find(e => e.startsWith("__reactEventHandlers"));
+                                function click(ew) {
+                                    en[key3].onDragEnter({ dataTransfer: play, persist() { return true }, stopPropagation() { return true } });
+                                    stage[key2].onDragOver({ preventDefault() { } })
+                                    en[key3].onDrop({ dataTransfer: play, persist() { return true }, stopPropagation() { return true }, clientX: ew.clientX, clientY: ew.clientY, x: ew.x, y: ew.y });
+                                    stage[key2].onDrop({ dataTransfer: play, persist() { return true } })
+                                    array.forEach(e => e.removeEventListener("click", e.cococlickfunc, false))
+                                    e[key].onDragEnd({})
+                                }
+                                en.cococlickfunc = click;
+                                en.addEventListener("click", click, false);
+                            })
+                        } else {
+                            e[key].onDragEnd()
+                        }
+                    })
+                })
+            }, 100);
+        })();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const searchText = "通用积木";
+            const replaceText = "Oldsquaw-CoCoPro赛事版";
+
+            // Recursive function to replace text in a node and its children
+            function replaceTextInNode(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const content = node.nodeValue.replace(searchText, replaceText);
+                    node.nodeValue = content;
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    node.childNodes.forEach(childNode => replaceTextInNode(childNode));
+                }
+            }
+
+            replaceTextInNode(document.body);
+        })
+    </script>
+
+    <script src="https://creation.codemao.cn/coconut/web/1.21.0/static/js/0.251c5324.chunk.js"></script>
+    <script src="https://creation.codemao.cn/coconut/web/1.21.0/static/js/2.f99c09cf.chunk.js"></script>
+    <script src="https://creation.codemao.cn/coconut/web/1.21.0/static/js/main.b85cda13.chunk.js"></script>
+</body>
+
+</html>

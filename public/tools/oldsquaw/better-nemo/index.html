@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BetterNemo 适配器</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #172033;
+        background: #f6f8fc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      main {
+        display: grid;
+        gap: 18px;
+        width: min(760px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 36px 0;
+      }
+
+      header,
+      section {
+        border: 1px solid #dce4f2;
+        border-radius: 8px;
+        background: #fff;
+        padding: 18px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      h2 {
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+
+      p,
+      li {
+        color: #526078;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        border-radius: 999px;
+        padding: 0 14px;
+        color: #fff;
+        background: #2477ff;
+        font-size: 14px;
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      a.secondary {
+        color: #2477ff;
+        background: #eaf2ff;
+      }
+
+      code {
+        border-radius: 6px;
+        padding: 2px 5px;
+        background: #eef3fb;
+        color: #26364f;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>BetterNemo 适配器</h1>
+        <p>BetterNemo 不是单页工具，它通过 Nemo 工作区资源和扩展加载器完成注入。Pickcat 已识别它的接入方式，下一步应打包 workspace 资源，而不是嵌入官网启动页。</p>
+      </header>
+
+      <section>
+        <h2>接入结论</h2>
+        <ul>
+          <li><code>workspace.html</code> 依赖本地 assets、theme、extensions 和 workspace-scripts。</li>
+          <li><code>extension-loader.js</code> 会加载 BetterNemo 的扩展脚本，不能只用远程 raw HTML 替代。</li>
+          <li>当前入口保留为适配器，避免把下载页误当成可运行编辑器。</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>协作入口</h2>
+        <div class="actions">
+          <a href="https://gitee.com/oldsquaw/better-nemo" target="_blank" rel="noreferrer">查看源码</a>
+          <a class="secondary" href="https://oldsquaw.rth1.xyz/bn-launcher.html" target="_blank" rel="noreferrer">发布页</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

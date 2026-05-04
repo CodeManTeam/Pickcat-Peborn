@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oldsquaw-CoCoPro</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Speculation Rules for Preloading -->
+  <script type="speculationrules">
+    {
+      "prerender": [
+        {
+          "source": "list",
+          "urls": [
+            "https://coco.codemao.cn/http-widget-proxy/https://ccp.be-a.dev/editor/",
+            "https://coco.codemao.cn/http-widget-proxy/https://ccp.be-a.dev/editor/?beautify",
+            "https://coco.codemao.cn/http-widget-proxy/https://ccp.be-a.dev/editor/?dark",
+            "https://coco.codemao.cn/http-widget-proxy/https://ccp.be-a.dev/editor/?AI"
+          ]
+        }
+      ]
+    }
+  </script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-900 antialiased">
+  <div class="min-h-screen flex flex-col md:flex-row">
+    <!-- 左侧图片区域 (电脑端) / 上方图片区域 (移动端) - 纯图片 -->
+    <div class="md:w-1/2 h-1/3 md:h-screen relative">
+      <img src="static/img/theme.png" alt="Oldsquaw-CoCoPro" class="absolute inset-0 w-full h-full object-cover" />
+    </div>
+
+    <!-- 右侧内容区域 (电脑端) / 下方内容区域 (移动端) -->
+    <div class="md:w-1/2 h-2/3 md:h-screen flex items-center justify-center p-6 md:p-12 bg-gray-50">
+      <div class="w-full max-w-md">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8">请选择您喜欢的主题扩展</h2>
+
+        <div class="space-y-4">
+          <!-- 主题选择按钮 -->
+          <button
+            data-url="{{origin}}/editor/index.html"
+            data-name="CoCo 默认"
+            class="theme-option w-full flex items-center justify-between py-4 px-5 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all">
+            <span class="flex items-center">
+              <span class="w-3 h-3 rounded-full bg-blue-500 mr-3"></span>
+              <span>CoCo 默认</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="last-visit-badge hidden text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">上次访问</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </button>
+
+          <button
+            data-url="{{origin}}/editor/index.html?beautify"
+            data-name="浅色主题美化"
+            class="theme-option w-full flex items-center justify-between py-4 px-5 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all">
+            <span class="flex items-center">
+              <span class="w-3 h-3 rounded-full bg-green-500 mr-3"></span>
+              <span>浅色主题美化</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="last-visit-badge hidden text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">上次访问</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </button>
+
+          <button
+            data-url="{{origin}}/editor/index.html?dark"
+            data-name="深色主题"
+            class="theme-option w-full flex items-center justify-between py-4 px-5 bg-gray-800 text-white rounded-lg shadow-sm border border-gray-700 hover:shadow-md transition-all">
+            <span class="flex items-center">
+              <span class="w-3 h-3 rounded-full bg-purple-500 mr-3"></span>
+              <span>深色主题</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="last-visit-badge hidden text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full">上次访问</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </button>
+
+          <button
+            data-url="{{origin}}/editor/index.html?AI"
+            data-name="AI 测试版"
+            class="theme-option w-full flex items-center justify-between py-4 px-5 bg-gray-800 text-white rounded-lg shadow-sm border border-gray-700 hover:shadow-md transition-all">
+            <span class="flex items-center">
+              <span class="w-3 h-3 rounded-full bg-yellow-500 mr-3"></span>
+              <span>AI 测试版</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="last-visit-badge hidden text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full">上次访问</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </button>
+        </div>
+
+        <div class="mt-8 text-sm text-gray-500">
+          <p>选择一个主题以开始您的编程旅程</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* 自定义样式 */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .theme-option {
+      transition: all 0.2s ease;
+    }
+
+    .theme-option:hover {
+      transform: translateY(-2px);
+    }
+
+    .theme-option:active {
+      transform: translateY(0);
+    }
+
+    /* 上次访问标记 */
+    .last-visit-badge {
+      transition: all 0.2s ease;
+    }
+
+    .last-visit-badge.visible {
+      display: inline-flex;
+    }
+
+    /* 移动端样式优化 */
+    @media (max-width: 768px) {
+      .theme-option {
+        padding: 0.75rem 1rem;
+      }
+    }
+  </style>
+
+  <script src="static/ccp/origin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 获取所有主题选项按钮
+      const themeButtons = document.querySelectorAll('.theme-option');
+
+      // 从本地存储中获取上次访问记录
+      const lastVisit = localStorage.getItem('lastVisitTheme');
+
+      // 为每个按钮添加点击事件
+      themeButtons.forEach(button => {
+        const url = button.getAttribute('data-url').replace('{{origin}}', ccporigin);
+        const name = button.getAttribute('data-name');
+        const badge = button.querySelector('.last-visit-badge');
+
+        // 如果此选项是上次访问的选项，显示badge
+        if (name === lastVisit) {
+          badge.classList.remove('hidden');
+          badge.classList.add('visible');
+        }
+
+        // 添加点击事件
+        button.addEventListener('click', function() {
+          // 保存此选项为最后访问
+          localStorage.setItem('lastVisitTheme', name);
+
+          // 延迟跳转以显示动画
+          setTimeout(() => {
+            window.location.href = url;
+          }, 300);
+        });
+      });
+
+      // 响应式布局调整
+      function adjustLayout() {
+        const isMobile = window.innerWidth < 768;
+        document.body.classList.toggle('is-mobile', isMobile);
+      }
+
+      // 初始化布局
+      adjustLayout();
+      window.addEventListener('resize', adjustLayout);
+    });
+  </script>
+</body>
+</html>

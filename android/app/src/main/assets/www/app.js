@@ -45,42 +45,46 @@ const oldsquawTools = [
   {
     id: "better-nemo",
     name: "BetterNemo",
-    tag: "Nemo 拓展",
-    desc: "更强的 Nemo 编辑器与播放器移植，适合作品再创作和移动端打开。",
-    url: "https://oldsquaw.rth1.xyz/bn-launcher.html",
+    tag: "Nemo 适配器",
+    desc: "BetterNemo 需要 Nemo 工作区注入资源；当前先提供软件内适配说明，避免误嵌下载页。",
+    url: "public/tools/oldsquaw/better-nemo/index.html",
     fallbackUrl: oldsquawLinks.betterNemo,
     icon: ASSETS.nemo,
-    tone: "blue"
+    tone: "blue",
+    integration: "adapter"
   },
   {
     id: "coco-pro",
     name: "CoCo Pro",
-    tag: "CoCo 魔改",
-    desc: "集成界面美化、宽屏适配、控件商城、AI CoCo 鸭和协作能力。",
-    url: "https://gitee.com/oldsquaw/coco/raw/master/index.html",
+    tag: "本地部署",
+    desc: "已随 Pickcat 打包 CoCo-Oldsquaw 静态站，直接在软件内启动编辑器。",
+    url: "public/tools/oldsquaw/coco/index.html",
     fallbackUrl: oldsquawLinks.cocoPro,
     icon: ASSETS.appLogo,
-    tone: "green"
+    tone: "green",
+    integration: "local-static"
   },
   {
     id: "kn-oldsquaw",
     name: "KN-Oldsquaw",
-    tag: "KittenN 镜像",
-    desc: "KittenN 镜像和 Oldsquaw 拓展项目，补足 KN 作品打开入口。",
-    url: "https://kn.codemao.cn/",
+    tag: "本地单页",
+    desc: "已内置 KN-Oldsquaw 静态入口，用本地 HTML 承接 KittenN 镜像体验。",
+    url: "public/tools/oldsquaw/kn/1.0.2.html",
     fallbackUrl: oldsquawLinks.kn,
     icon: ASSETS.kitten,
-    tone: "yellow"
+    tone: "yellow",
+    integration: "local-static"
   },
   {
     id: "widget-editor",
     name: "控件编辑器",
-    tag: "AI 控件",
-    desc: "面向 CoCo 自定义控件的编辑入口，承接控件、扩展和教程投稿。",
-    url: "https://gitee.com/oldsquaw/oldsquaw-widget-editor/raw/master/1.0.0.html",
+    tag: "本地单页",
+    desc: "已内置 Oldsquaw Widget Editor，面向 CoCo 自定义控件编辑。",
+    url: "public/tools/oldsquaw/widget-editor/1.0.0.html",
     fallbackUrl: oldsquawLinks.widgetEditor,
     icon: ASSETS.photo,
-    tone: "pink"
+    tone: "pink",
+    integration: "local-static"
   }
 ];
 
@@ -2093,6 +2097,11 @@ function renderToolRunner() {
   const root = $("[data-tool-runner]");
   const tool = toolRegistry[state.activeToolId] || toolRegistry.nemo;
   if (!root || !tool) return;
+  const tipByIntegration = {
+    "local-static": ["本地部署中", "这个工具已经随 Pickcat 打包，当前页面直接从软件资源目录加载。"],
+    adapter: ["适配器入口", "这个项目不是单页工具，Pickcat 会按它的实际结构继续做 workspace 级接入。"]
+  };
+  const tip = tipByIntegration[tool.integration] || ["内置运行中", "如果页面禁止内嵌或登录跳转受限，点右上角“新窗口”继续使用。"];
   root.classList.remove("tool-loaded");
   root.innerHTML = `
     <section class="tool-runner-head">
@@ -2114,8 +2123,8 @@ function renderToolRunner() {
         sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-downloads"
       ></iframe>
       <div class="tool-runner-tip">
-        <strong>内置运行中</strong>
-        <span>如果页面禁止内嵌或登录跳转受限，点右上角“新窗口”继续使用。</span>
+        <strong>${escapeHtml(tip[0])}</strong>
+        <span>${escapeHtml(tip[1])}</span>
       </div>
     </section>
   `;

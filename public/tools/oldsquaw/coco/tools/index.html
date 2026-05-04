@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCP工具箱</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .toolbox {
+            display: inline-block;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card img {
+            border-radius: 8px 8px 0 0;
+            width: 100%;
+            height: auto;
+        }
+
+        .card a {
+            display: block;
+            padding: 10px;
+            text-align: left;
+            text-decoration: none;
+            color: #333;
+            border-radius: 0 0 8px 8px;
+            font-weight: 600;
+        }
+
+        .card a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .separator {
+            width: 100%;
+            border-bottom: 1px solid #ccc;
+            text-align: center;
+            line-height: 0.1em;
+            margin: 20px 0;
+        }
+
+        .separator span {
+            background: #fff;
+            padding: 0 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #444;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>CCP工具箱</h2>
+
+    <div class="toolbox" id="toolbox">
+        <!-- Cards and separators will be added here by JavaScript -->
+    </div>
+
+    <script>
+        // 工具箱数据列表，包含图片、链接、宽度、高度
+var tools = [
+  {
+    img: "https://cdn.icon-icons.com/icons2/1744/PNG/96/3643751-craft-go-paper-plane-send-start_113443.png",
+    text: "CCP-Player",
+    link: "/tools/ccpplayer-help",
+    width: "120px",
+    height: "100px",
+  },
+  {
+    img: "https://cdn.icon-icons.com/icons2/2963/PNG/96/macos_big_sur_download_folder_icon_186042.png",
+    text: "打包EXE(三方)",
+    link: "/tools/packexe-help",
+    width: "120px",
+    height: "100px",
+  },
+  {
+    img: "https://ccp.be-a.dev/favicon.ico",
+    text: "CoCoPro",
+    link: "http://ccp.be-a.dev/?type=editor",
+    width: "100px",
+    height: "100px",
+  },
+  {
+    img: "https://shequ.pgaot.com/static/img/favicon.svg",
+    text: "点鸭控件商城",
+    link: "https://shequ.pgaot.com/?mod=cocojs",
+    width: "100px",
+    height: "100px",
+  },
+  {
+    img: "https://cdn.icon-icons.com/icons2/624/PNG/96/User_Manual-80_icon-icons.com_57245.png",
+    text: "CoCo智慧助手",
+    link: "https://chatglm.cn/share/FWrgX",
+    width: "120px",
+    height: "110px",
+  },
+  {
+    img: "https://cdn.icon-icons.com/icons2/534/PNG/96/technical-support_icon-icons.com_52812.png",
+    text: "Ai编写控件",
+    link: "https://chatglm.cn/share/FWVsd",
+    width: "120px",
+    height: "110px",
+  },
+
+  {
+    img: "image1.jpg",
+    text: "工具1",
+    link: "http://ccp.be-a.dev/home",
+    width: "150px",
+    height: "100px",
+  },
+  // ...更多工具
+];
+
+// 分割线数据，包含文本和插入位置
+var separators = [
+  { text: "体验", position: 0 },
+  { text: "创作", position: 2 },
+  { text: "智能", position: 4 },
+  { text: "更多", position: 6 },
+];
+
+// 设置每行最多显示的卡片数量
+var maxCardsPerRow = 4;
+
+// 动态添加卡片的函数
+function addCards(tools, separators) {
+  var toolbox = document.getElementById("toolbox");
+  var cardIndex = 0;
+
+  tools.forEach(function (tool, index) {
+    // 检查是否需要添加分割线
+    separators.forEach(function (separator) {
+      if (separator.position === index) {
+        var separatorEl = document.createElement("div");
+        separatorEl.className = "separator";
+        separatorEl.innerHTML = `<span>${separator.text}</span>`;
+        toolbox.appendChild(separatorEl);
+      }
+    });
+
+    var card = document.createElement("div");
+    card.className = "card";
+    card.style.width = tool.width;
+    card.innerHTML = `
+      <img src="${tool.img}" alt="${tool.text}" style="width: ${tool.width}; height:${tool.height}; border-radius: 8px 8px 0 0;">
+      <a href="${tool.link}" target="_blank" style="width:${tool.width};">${tool.text}</a>
+    `;
+    toolbox.appendChild(card);
+    cardIndex++;
+  });
+}
+
+// 初始化工具箱
+addCards(tools, separators);
+
+    </script>
+
+</body>
+
+</html>

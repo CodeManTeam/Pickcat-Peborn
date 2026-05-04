@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oldsquaw-Widget-Editor</title>
+<!-- 引入 Ace Editor 的库文件 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+  }
+  .editor-container {
+    width: 80%;
+    margin: 50px auto;
+    position: relative;
+  }
+  #editor {
+    width: 100%;
+    height: 300px;
+    background-color: #1e1e1e;
+    border-radius: 5px;
+  }
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+  }
+  .button {
+    background-color: #3e3e3e;
+    color: #ffffff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  .dropdown-content {
+    position: absolute;
+    background-color: #3e3e3e;
+    border-radius: 5px;
+    top: 30px;
+    right: 0;
+    display: none;
+  }
+  .dropdown-content a {
+    color: white;
+    padding: 10px;
+    text-decoration: none;
+    display: block;
+  }
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+</style>
+</head>
+<body>
+  <div class="editor-container">
+    <div id="editor">// 由Oldsquaw提供服务</div>
+    <div class="button-container">
+      <div class="dropdown">
+        <button class="button">新建</button>
+        <div class="dropdown-content">
+          <a href="#" id="blankCode">空白代码</a>
+          <a href="#" id="visibleWidget">可见控件</a>
+          <a href="#" id="invisibleWidget">不可见控件</a>
+        </div>
+      </div>
+      <input type="file" id="importFile" accept=".js, .jsx" style="display:none;">
+      <label for="importFile" class="button">导入代码</label>
+      <button class="button" id="exportButton">导出代码</button>
+    </div>
+  </div>
+<script>
+  const editor = ace.edit("editor");
+  editor.setTheme("ace/theme/tomorrow_night");
+  editor.session.setMode("ace/mode/javascript");
+
+  const blankCode = `// 在这里编辑你的代码`;
+
+  const visibleWidgetCode = `const types = {
+    isInvisibleWidget: false,
+    type: "MY_WIDGET",
+    icon: "",
+    title: "我的控件可见",
+    version: "1.0.0",
+    isGlobalWidget: false,
+    properties: [
+      {
+        key: '__width',
+        label: '宽度',
+        valueType: 'number',
+        defaultValue: 200,
+        blockOptions: {
+          generateBlock: false,
+        },
+      },
+      {
+        key: '__height',
+        label: '高度',
+        valueType: 'number',
+        defaultValue: 150,
+        blockOptions: {
+          generateBlock: false,
+        },
+      },
+      {
+        key: '__size',
+        label: '',
+        valueType: 'number',
+        defaultValue: 0,
+        readonly: true,
+        blockOptions: {
+          setter: {
+            keys: ['__height', '__width'],
+          },
+          getter: {
+            keys: ['__height', '__width'],
+          },
+        },
+      },
+    ],
+    methods: [],
+    events: [],
+  };
+
+  class Widget extends VisibleWidget {
+    constructor(props) {
+      super(props);
+      this.__width = props.__width;
+      this.__height = props.__height;
+    }
+    render() {
+      return React.createElement('p', {style: {color: 'red'}}, 'Waddle提醒您，你还没有设置渲染积木');
+    }
+  }
+
+  exports.types = types;
+  exports.widget = Widget;`;
+
+  const invisibleWidgetCode = `const types = {
+    isInvisibleWidget: true,
+    type: "MY_WIDGET",
+    icon: "",
+    title: "我的不可见控件",
+    version: "1.0.0",
+    isGlobalWidget: true,
+    properties: [],
+    methods: [],
+    events: [],
+};
+
+class Widget extends InvisibleWidget {
+    constructor(props) {
+        super(props);
+
+    }
+
+}
+
+exports.types = types;
+exports.widget = Widget;`;
+
+  const exportButton = document.getElementById('exportButton');
+  const importFileInput = document.getElementById('importFile');
+  const blankCodeButton = document.getElementById('blankCode');
+  const visibleWidgetButton = document.getElementById('visibleWidget');
+  const invisibleWidgetButton = document.getElementById('invisibleWidget');
+
+  // 导出代码
+  exportButton.addEventListener('click', () => {
+    const code = editor.getValue();
+    const isInvisibleWidget = /isInvisibleWidget: (true|false)/.exec(code);
+    let exportCode = code;
+
+    if (isInvisibleWidget) {
+      const isTrue = isInvisibleWidget[1] === 'true';
+      exportCode = isTrue ? code.replace('isInvisibleWidget: true', '') : `export default function MyComponent() {\n${code}\n}`;
+    }
+
+    const blob = new Blob([exportCode], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my_code.js';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // 导入代码
+  importFileInput.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const code = await file.text();
+      editor.setValue(code);
+    }
+  });
+
+  // 新建按钮选项
+  blankCodeButton.addEventListener('click', () => {
+    editor.setValue(blankCode);
+  });
+
+  visibleWidgetButton.addEventListener('click', () => {
+    editor.setValue(visibleWidgetCode);
+  });
+
+  invisibleWidgetButton.addEventListener('click', () => {
+    editor.setValue(invisibleWidgetCode);
+  });
+</script>
+</body>
+</html>
