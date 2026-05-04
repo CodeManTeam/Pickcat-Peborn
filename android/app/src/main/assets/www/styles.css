@@ -2851,6 +2851,42 @@ body.tool-fullscreen .tool-fullscreen-btn .fs-shrink { display: block; }
   }
 }
 
+.more-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  align-items: center;
+  justify-items: right;
+  pointer-events: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.menu-panel {
+  position: relative;
+  display: grid;
+  gap: 24px;
+  min-height: calc(var(--viewport-height) - (var(--shell-inset-y) * 2));
+  width: 50vw;
+  border-radius: 16px 16px 0 0;
+  padding: 16px 28px calc(30px + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.18);
+  animation: menu-in 180ms ease both;
+}
+
+@keyframes menu-in {
+  from {
+    transform: translateX(28px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+
 .bottom-nav {
   position: fixed;
   left: 50%;

@@ -2078,15 +2078,40 @@ function updateTopbar(view) {
   renderTopActions(view);
 }
 
+$(".more-menu")?.addEventListener("click", e => {
+  if (e.target == $(".more-menu"))
+    $(".more-menu")?.classList.toggle("hidden", true);
+});
 function renderTopActions(view) {
   const actions = $(".top-actions");
-  const hidden = ["mine", "search", "publish", "detail", "work", "user", "tool", "login"].includes(view);
-  actions.classList.toggle("hidden", hidden);
-  if (hidden) return;
-  actions.innerHTML = `
+  console.log(view);
+  switch (view) {
+    case "search":
+    case "publish":
+    case "detail":
+    case "work":
+    case "tool":
+    case "login":
+    case "user":
+      actions.innerHTML = '';
+      break;
+    case "mine":
+      actions.innerHTML = `
+    <button class="icon-btn" type="button" data-more-menu aria-label="菜单"><img class="top-action-img" src="${ASSETS.moreMenu}" alt="" /></button>
+  `;
+      $("[data-more-menu]", actions)?.addEventListener("click", () => {
+        $(".more-menu")?.classList.toggle("hidden", false)
+      });
+      break;
+    case "home":
+    case "circle":
+    case "message":
+      actions.innerHTML = `
     <button class="icon-btn" type="button" data-search aria-label="搜索"><img class="top-action-img" src="${ASSETS.search}" alt="" /></button>
   `;
-  $("[data-search]", actions)?.addEventListener("click", () => navigateLocal("search"));
+      $("[data-search]", actions)?.addEventListener("click", () => navigateLocal("search"));
+      break;
+  }
   return;
 }
 
