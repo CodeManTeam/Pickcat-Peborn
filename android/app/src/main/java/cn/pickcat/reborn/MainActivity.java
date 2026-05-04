@@ -207,6 +207,40 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public void syncPlayerAuth(String token, String cookie) {
+            runOnUiThread(() -> {
+                CookieManager manager = CookieManager.getInstance();
+                String[] domains = {
+                    "https://shequ.codemao.cn",
+                    "https://api.codemao.cn",
+                    "https://player.codemao.cn",
+                    "https://kitten4.codemao.cn",
+                    "https://kn.codemao.cn",
+                    "https://nemo.codemao.cn",
+                    "https://creation.codemao.cn"
+                };
+                for (String domain : domains) {
+                    if (token != null && !token.isEmpty()) {
+                        manager.setCookie(domain, "authorization=" + token + "; Path=/");
+                        manager.setCookie(domain, "auth=" + token + "; Path=/");
+                        manager.setCookie(domain, "token=" + token + "; Path=/");
+                    }
+                    if (cookie != null && !cookie.isEmpty()) {
+                        for (String item : cookie.split(";")) {
+                            String trimmed = item.trim();
+                            if (!trimmed.isEmpty()) {
+                                manager.setCookie(domain, trimmed + "; Path=/");
+                            }
+                        }
+                    }
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    manager.flush();
+                }
+            });
+        }
+
+        @JavascriptInterface
         public String userAgent() {
             return WINDOWS_DESKTOP_UA;
         }

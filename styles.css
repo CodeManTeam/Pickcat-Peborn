@@ -40,6 +40,10 @@ body.native-wrapper {
   padding: 0;
 }
 
+body.player-landscape {
+  background: #000;
+}
+
 button,
 input,
 textarea {
@@ -88,6 +92,10 @@ body.native-wrapper .phone-shell {
   position: relative;
   min-height: calc(var(--viewport-height) - (var(--shell-inset-y) * 2));
   padding: calc(58px + env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) calc(118px + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+}
+
+body.keyboard-open .app {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 
 body.home-viewing .app {
@@ -1926,6 +1934,10 @@ body.native-wrapper .topbar {
   line-height: 1.6;
 }
 
+body.keyboard-open .bottom-nav {
+  display: none !important;
+}
+
 .composer-actions {
   display: flex;
   align-items: center;
@@ -2292,6 +2304,12 @@ body.native-wrapper .topbar {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.4;
+}
+
+.tool-runner-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .tool-runner-frame-wrap {
@@ -2776,6 +2794,50 @@ body.native-wrapper .bottom-nav {
   left: 0;
   transform: none;
   border-radius: 0;
+}
+
+body.player-landscape .topbar,
+body.player-landscape .bottom-nav {
+  display: none !important;
+}
+
+body.player-landscape .app {
+  padding: 0 !important;
+}
+
+body.player-landscape #work-view,
+body.player-landscape .work-reader,
+body.player-landscape .work-reader-hero {
+  min-height: var(--viewport-height);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #000;
+}
+
+body.player-landscape .work-reader-title,
+body.player-landscape .work-author-card,
+body.player-landscape .work-reader-panel,
+body.player-landscape .work-comments-section {
+  display: none;
+}
+
+body.player-landscape .work-reader-stage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: var(--viewport-height);
+  aspect-ratio: auto;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: 40;
+}
+
+body.player-landscape .work-reader-stage iframe,
+body.player-landscape .work-reader-stage img,
+body.player-landscape .work-reader-cover {
+  object-fit: contain;
+  background: #000;
 }
 
 .nav-item,

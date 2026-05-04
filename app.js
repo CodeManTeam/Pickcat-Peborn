@@ -41,6 +41,10 @@ const oldsquawLinks = {
   widgetEditor: "https://gitee.com/oldsquaw/oldsquaw-widget-editor"
 };
 
+const communityToolLinks = {
+  betterNemoPc: "https://github.com/HHCL233/BetterNemoPC"
+};
+
 const oldsquawTools = [
   {
     id: "better-nemo",
@@ -119,6 +123,19 @@ const toolRegistry = {
     fallbackUrl: "https://kn.codemao.cn/",
     icon: ASSETS.kitten,
     tone: "yellow"
+  },
+  "better-nemo-pc": {
+    id: "better-nemo-pc",
+    name: "BetterNemoPC",
+    tag: "本地 Workspace",
+    desc: "接入 HHCL233 的 BetterNemoPC 网页适配版，保留首页、作品页和 BN 工作区入口。",
+    url: "public/tools/hhcl233/better-nemo-pc/index.html",
+    fallbackUrl: communityToolLinks.betterNemoPc,
+    updateUrl: communityToolLinks.betterNemoPc,
+    icon: ASSETS.nemo,
+    tone: "blue",
+    integration: "local-static",
+    layout: "workspace"
   },
   ...Object.fromEntries(oldsquawTools.map((tool) => [tool.id, tool]))
 };
@@ -222,6 +239,31 @@ function applyRuntimeShellMode() {
   document.documentElement.style.setProperty("--shell-inset-y", nativeWrapper ? "0px" : "");
 }
 
+function isSecondaryView(view = state.currentView) {
+  return ["search", "publish", "detail", "work", "user", "tool", "login"].includes(view);
+}
+
+function isTextEntryTarget(target) {
+  return Boolean(
+    target instanceof HTMLElement &&
+      (target.matches("textarea, [contenteditable='true'], [contenteditable=''], input:not([type='button']):not([type='submit']):not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color'])") ||
+        target.isContentEditable)
+  );
+}
+
+function setKeyboardOpen(open) {
+  document.body.classList.toggle("keyboard-open", Boolean(open));
+}
+
+function syncPlayerAuth() {
+  try {
+    if (!window.PickcatAndroid?.syncPlayerAuth || !state.auth) return;
+    window.PickcatAndroid.syncPlayerAuth(state.auth.token || "", state.auth.cookie || "");
+  } catch {
+    // Native cookie sync is best-effort.
+  }
+}
+
 function saveSessionToStorage(remember = true) {
   if (!state.user || !state.auth) return;
   if (remember) {
@@ -263,6 +305,7 @@ function hydrateNativeSession() {
     localStorage.setItem("pickcat:user", JSON.stringify(state.user));
     localStorage.setItem("pickcat:auth", JSON.stringify(state.auth));
     if (state.savedLogin) localStorage.setItem("pickcat:login", JSON.stringify(state.savedLogin));
+    syncPlayerAuth();
   } catch {
     clearSavedSession();
   }
@@ -732,6 +775,7 @@ function editorEntries(work = {}) {
   const meta = engineMeta(work, work.id);
   const partnerEntries = [
     meta.code === "nemo" ? { label: "BetterNemo", tool: "better-nemo", disabled: false } : null,
+    meta.code === "nemo" ? { label: "BetterNemoPC", tool: "better-nemo-pc", disabled: false } : null,
     meta.code === "kittenN" ? { label: "KN-Oldsquaw", tool: "kn-oldsquaw", disabled: false } : null,
     { label: "CoCo Pro", tool: "coco-pro", disabled: false },
     { label: "控件编辑器", tool: "widget-editor", disabled: false }
@@ -746,6 +790,8 @@ function editorEntries(work = {}) {
 }
 
 function setNativePlayerMode(active) {
+  if (active) syncPlayerAuth();
+  setKeyboardOpen(false);
   try {
     window.PickcatAndroid?.setPlayerLandscape?.(Boolean(active));
   } catch {
@@ -2024,6 +2070,7 @@ function setView(view, options = {}) {
     const fromView = state.currentView;
     if (fromView !== view) state.previousView = fromView;
     state.currentView = view;
+    setKeyboardOpen(false);
     document.body.classList.toggle("tool-workspace-view", isWorkspaceToolView(view));
     animateViewChange(fromView, view, options);
     $$(".nav-item").forEach((item) => {
@@ -2032,7 +2079,7 @@ function setView(view, options = {}) {
       const img = $("img", item);
       if (img) img.src = active ? img.dataset.iconActive : img.dataset.iconNormal;
     });
-    $(".bottom-nav")?.classList.toggle("hidden", view === "tool");
+    $(".bottom-nav")?.classList.toggle("hidden", isSecondaryView(view));
     updateTopbar(view);
     if (view !== "work") setNativePlayerMode(false);
     updateFeedSentinel();
@@ -2118,7 +2165,10 @@ function renderToolRunner() {
         <h2>${escapeHtml(tool.name)}</h2>
         <p>${escapeHtml(tool.desc || "在 Pickcat 内直接使用这个工具。")}</p>
       </div>
-      <a class="text-btn" href="${tool.fallbackUrl || tool.url}" target="_blank" rel="noreferrer">新窗口</a>
+      <div class="tool-runner-actions">
+        ${tool.updateUrl ? `<a class="text-btn" href="${tool.updateUrl}" target="_blank" rel="noreferrer">检查更新</a>` : ""}
+        <a class="text-btn" href="${tool.fallbackUrl || tool.url}" target="_blank" rel="noreferrer">新窗口</a>
+      </div>
     </section>
     <section class="tool-runner-frame-wrap">
       <iframe
@@ -3665,6 +3715,12 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeCreateSheet();
   });
+  document.addEventListener("focusin", (event) => {
+    if (isTextEntryTarget(event.target)) setKeyboardOpen(true);
+  });
+  document.addEventListener("focusout", () => {
+    setTimeout(() => setKeyboardOpen(isTextEntryTarget(document.activeElement)), 120);
+  });
   $$("[data-feed-tab]").forEach((tab) => {
     tab.addEventListener("click", () => {
       state.feedTab = tab.dataset.feedTab;
@@ -3736,6 +3792,7 @@ function bindEvents() {
 async function init() {
   applyRuntimeShellMode();
   hydrateNativeSession();
+  syncPlayerAuth();
   bindEvents();
   renderHistory();
   renderMineShell(state.user);
