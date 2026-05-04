@@ -931,6 +931,44 @@ body.native-wrapper .topbar {
   gap: 8px;
 }
 
+.mine-footer {
+  margin-top: 24px;
+  padding: 20px 0 32px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.mine-footer section {
+  margin-bottom: 18px;
+}
+
+.mine-footer h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.mine-footer p {
+  margin: 0 0 4px;
+}
+
+.mine-footer a {
+  color: var(--blue);
+}
+
+.mine-legal {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.mine-legal p {
+  font-size: 12px;
+  color: #999;
+}
+
 .profile-actions {
   display: flex;
   flex-wrap: wrap;
