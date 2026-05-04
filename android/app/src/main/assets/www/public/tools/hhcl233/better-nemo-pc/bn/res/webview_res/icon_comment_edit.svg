@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon_角色_重命名</title>
+    <g id="icon_角色_重命名" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="矩形" fill="#D8D8D8" opacity="0" x="0" y="0" width="32" height="32"></rect>
+        <g id="编组" transform="translate(8.000000, 7.000000)" stroke="#B8A4FF" stroke-width="1.5">
+            <path d="M15.8823529,9.5 L15.8823529,16 C15.8823529,17.1045695 14.9342501,18 13.7647059,18 L2.11764706,18 C0.948102883,18 0,17.1045695 0,16 L0,5 C0,3.8954305 0.948102883,3 2.11764706,3 L7.41176471,3" id="路径" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M10.8187788,-0.181639292 C11.8926658,-0.212321778 12.7880963,0.633362583 12.8187788,1.7072496 C12.8198367,1.74427908 12.8198367,1.78133123 12.8187788,1.81836071 L12.5246611,12.1124784 L12.5246611,12.1124784 L10.3717199,15.4654195 L8.40701405,12.2301254 L8.7011317,1.93600777 C8.73414861,0.780415885 9.66318687,-0.148622381 10.8187788,-0.181639292 Z" id="矩形" stroke-linejoin="round" transform="translate(10.642308, 7.612478) rotate(-315.000000) translate(-10.642308, -7.612478) "></path>
+            <line x1="11.6470588" y1="3" x2="14.8235294" y2="6" id="路径-4"></line>
+        </g>
+    </g>
+</svg>

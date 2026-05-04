@@ -775,6 +775,7 @@ function engineMeta(work = {}, id = "") {
 
 function editorEntries(work = {}) {
   const meta = engineMeta(work, work.id);
+  const bnEntries = meta.code === "nemo" ? [{ label: "BN播放器", tool: "better-nemo", disabled: false }] : [];
   const partnerEntries = [
     meta.code === "nemo" ? { label: "BetterNemo", tool: "better-nemo", disabled: false } : null,
     meta.code === "nemo" ? { label: "BetterNemoPC", tool: "better-nemo-pc", disabled: false } : null,
@@ -784,6 +785,7 @@ function editorEntries(work = {}) {
   ].filter(Boolean);
   return [
     { label: `${meta.label} 播放器`, url: work.playerUrls?.[0] || meta.workUrl || "", disabled: !(work.playerUrls?.[0] || meta.workUrl) },
+    ...bnEntries,
     { label: `${meta.label} 主页`, url: meta.homeUrl || "", disabled: !meta.homeUrl },
     ...partnerEntries,
     { label: "分享页", url: work.shareUrl || "", disabled: !work.shareUrl },
@@ -2288,18 +2290,27 @@ async function runSearch(keyword) {
   renderHistory();
   navigateLocal("search", { q: value });
   $("[data-search-input]").value = value;
-  const root = $("[data-search-results]");
-  root.replaceChildren(loadingCard(`正在搜索：${value}`, "搜索中"));
+  $("[data-search-tabs]")?.classList.add("hidden");
+  const postsRoot = $("[data-search-results-posts]");
+  const worksRoot = $("[data-search-results-works]");
+  postsRoot.classList.remove("hidden");
+  worksRoot.classList.add("hidden");
+  $$("[data-search-tab]").forEach((t) => t.classList.toggle("active", t.dataset.searchTab === "posts"));
+  postsRoot.replaceChildren(loadingCard(`正在搜索：${value}`, "搜索中"));
+  worksRoot.replaceChildren(loadingCard(`正在搜索：${value}`, "搜索中"));
   try {
     const [postResult, works] = await Promise.all([api.searchPosts(value, 20), searchWorks(value)]);
     const posts = (postResult.items || []).map(normalizePost);
-    const sections = [
-      createSearchSection("帖子", posts.length, posts.map(createPost), "没有找到相关帖子"),
-      createSearchSection("作品", works.length, works.map(createHomeWorkCard), "没有找到相关作品")
-    ];
-    root.replaceChildren(...sections);
+    postsRoot.replaceChildren(
+      ...(posts.length ? posts.map(createPost) : [statusCard("没有找到相关帖子")])
+    );
+    worksRoot.replaceChildren(
+      ...(works.length ? works.map(createHomeWorkCard) : [statusCard("没有找到相关作品")])
+    );
+    $("[data-search-tabs]")?.classList.toggle("hidden", !posts.length && !works.length);
   } catch (error) {
-    root.replaceChildren(errorCard(`搜索失败：${error.message}`, "搜索失败"));
+    postsRoot.replaceChildren(errorCard(`搜索失败：${error.message}`, "搜索失败"));
+    worksRoot.replaceChildren();
   }
 }
 
@@ -3768,6 +3779,13 @@ function bindEvents() {
       renderFeed();
     });
   });
+  $$("[data-search-tab]").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      $$("[data-search-tab]").forEach((item) => item.classList.toggle("active", item === tab));
+      $("[data-search-results-posts]")?.classList.toggle("hidden", tab.dataset.searchTab !== "posts");
+      $("[data-search-results-works]")?.classList.toggle("hidden", tab.dataset.searchTab !== "works");
+    });
+  });
   const mineTabKeys = ["activity", "works", "circles"];
   $$("#mine-view .profile-tabs .tab").forEach((tab, index) => {
     tab.addEventListener("click", () => {
@@ -3793,7 +3811,9 @@ function bindEvents() {
   $("[data-clear-search]").addEventListener("click", () => {
     state.history = [];
     renderHistory();
-    $("[data-search-results]").replaceChildren();
+    $("[data-search-results-posts]").replaceChildren();
+    $("[data-search-results-works]").replaceChildren();
+    $("[data-search-tabs]")?.classList.add("hidden");
   });
   $("[data-search-input]").addEventListener("keydown", (event) => {
     if (event.key === "Enter") runSearch(event.currentTarget.value);

@@ -18,13 +18,13 @@ const ASSETS = {
   nemo: "public/assets/pickcat/nemo.png",
   kitten: "public/assets/pickcat/kitten.png",
   moreMenu: "public/assets/pickcat/ic_more_mine_black.png",
-  back: "public/assets/pickcat/imoji_back.png",
   settings: "public/assets/pickcat/imoji_menu_settings.png"
 };
 
 const apiConfig = {
   codemao: location.protocol === "file:" ? "https://api.codemao.cn" : "/proxy/codemao",
   creation: location.protocol === "file:" ? "https://api-creation.codemao.cn" : "/proxy/creation",
+  openService: location.protocol === "file:" ? "https://open-service.codemao.cn" : "/proxy/open-service",
   pid: "65edCTyg"
 };
 
@@ -39,6 +39,10 @@ const oldsquawLinks = {
   cocoPro: "https://gitee.com/oldsquaw/coco",
   kn: "https://gitee.com/oldsquaw/kn-oldsquaw",
   widgetEditor: "https://gitee.com/oldsquaw/oldsquaw-widget-editor"
+};
+
+const communityToolLinks = {
+  betterNemoPc: "https://github.com/HHCL233/BetterNemoPC"
 };
 
 const oldsquawTools = [
@@ -119,6 +123,19 @@ const toolRegistry = {
     fallbackUrl: "https://kn.codemao.cn/",
     icon: ASSETS.kitten,
     tone: "yellow"
+  },
+  "better-nemo-pc": {
+    id: "better-nemo-pc",
+    name: "BetterNemoPC",
+    tag: "本地 Workspace",
+    desc: "接入 HHCL233 的 BetterNemoPC 网页适配版，保留首页、作品页和 BN 工作区入口。",
+    url: "public/tools/hhcl233/better-nemo-pc/index.html",
+    fallbackUrl: communityToolLinks.betterNemoPc,
+    updateUrl: communityToolLinks.betterNemoPc,
+    icon: ASSETS.nemo,
+    tone: "blue",
+    integration: "local-static",
+    layout: "workspace"
   },
   ...Object.fromEntries(oldsquawTools.map((tool) => [tool.id, tool]))
 };
@@ -408,7 +425,7 @@ const api = {
     }),
   currentTime: () => request(apiConfig.codemao, "/coconut/clouddb/currentTime"),
   captchaRule: (identity, timestamp) =>
-    request("/proxy/open-service", "/captcha/rule/v3", {
+    request(apiConfig.openService, "/captcha/rule/v3", {
       method: "POST",
       body: { identity, pid: apiConfig.pid, timestamp }
     }),
@@ -553,8 +570,10 @@ function proxyMediaUrl(value = "") {
     if (target.origin === location.origin) return target.toString();
     const host = target.hostname.toLowerCase();
     const shouldProxy =
-      host === "cdn-community.codemao.cn" ||
-      host === "cdn-community.bcmcdn.com";
+      host.endsWith(".codemao.cn") ||
+      host === "codemao.cn" ||
+      host.endsWith(".bcmcdn.com") ||
+      host === "bcmcdn.com";
     if (!shouldProxy) return target.toString();
     return `${location.origin}/proxy/media?url=${encodeURIComponent(target.toString())}`;
   } catch {
@@ -756,14 +775,17 @@ function engineMeta(work = {}, id = "") {
 
 function editorEntries(work = {}) {
   const meta = engineMeta(work, work.id);
+  const bnEntries = meta.code === "nemo" ? [{ label: "BN播放器", tool: "better-nemo", disabled: false }] : [];
   const partnerEntries = [
     meta.code === "nemo" ? { label: "BetterNemo", tool: "better-nemo", disabled: false } : null,
+    meta.code === "nemo" ? { label: "BetterNemoPC", tool: "better-nemo-pc", disabled: false } : null,
     meta.code === "kittenN" ? { label: "KN-Oldsquaw", tool: "kn-oldsquaw", disabled: false } : null,
     { label: "CoCo Pro", tool: "coco-pro", disabled: false },
     { label: "控件编辑器", tool: "widget-editor", disabled: false }
   ].filter(Boolean);
   return [
     { label: `${meta.label} 播放器`, url: work.playerUrls?.[0] || meta.workUrl || "", disabled: !(work.playerUrls?.[0] || meta.workUrl) },
+    ...bnEntries,
     { label: `${meta.label} 主页`, url: meta.homeUrl || "", disabled: !meta.homeUrl },
     ...partnerEntries,
     { label: "分享页", url: work.shareUrl || "", disabled: !work.shareUrl },
@@ -780,9 +802,29 @@ function setNativePlayerMode(active) {
     // Native bridge is only available inside the Android wrapper.
   }
   document.body.classList.toggle("player-landscape", Boolean(active));
+  const stage = $("[data-player-stage]");
+  if (!stage) return;
+  const existingBtn = $(".player-back-btn", stage);
+  if (active && !existingBtn) {
+    const btn = document.createElement("button");
+    btn.className = "player-back-btn";
+    btn.setAttribute("aria-label", "退出全屏");
+    btn.innerHTML = `<img src="public/assets/pickcat/imoji_back.png" alt="" />`;
+    btn.addEventListener("click", () => {
+      setNativePlayerMode(false);
+      renderWorkReader();
+    });
+    stage.appendChild(btn);
+  } else if (!active && existingBtn) {
+    existingBtn.remove();
+  }
 }
 
 function nativeBack() {
+  if (document.body.classList.contains("tool-fullscreen")) {
+    document.body.classList.remove("tool-fullscreen");
+    return true;
+  }
   const activePlayer = $("[data-player-stage] iframe");
   if (activePlayer && state.currentView === "work") {
     setNativePlayerMode(false);
@@ -2030,7 +2072,7 @@ function updateTopbar(view) {
   title.setAttribute("tabindex", view === "home" ? "0" : "-1");
   title.setAttribute("aria-label", view === "home" ? "回到顶部" : titles[view]);
   syncHomeTopbarVisibility({ force: true });
-  $("[data-back]").classList.toggle("hidden", !["search", "publish", "detail", "work", "user", "tool", "login"].includes(view));
+  $(".bottom-nav")?.classList.toggle("hidden", isSecondaryView(view));
   renderTopActions(view);
 }
 
@@ -2064,6 +2106,7 @@ function setView(view, options = {}) {
     $(".bottom-nav")?.classList.toggle("hidden", isSecondaryView(view));
     updateTopbar(view);
     if (view !== "work") setNativePlayerMode(false);
+    if (view !== "tool") document.body.classList.remove("tool-fullscreen");
     updateFeedSentinel();
     if (view === "mine") renderMinePage();
     if (view === "message") renderMessagesReadable();
@@ -2147,7 +2190,10 @@ function renderToolRunner() {
         <h2>${escapeHtml(tool.name)}</h2>
         <p>${escapeHtml(tool.desc || "在 Pickcat 内直接使用这个工具。")}</p>
       </div>
-      <a class="text-btn" href="${tool.fallbackUrl || tool.url}" target="_blank" rel="noreferrer">新窗口</a>
+      <div class="tool-runner-actions">
+        ${tool.updateUrl ? `<a class="text-btn" href="${tool.updateUrl}" target="_blank" rel="noreferrer">检查更新</a>` : ""}
+        <a class="text-btn" href="${tool.fallbackUrl || tool.url}" target="_blank" rel="noreferrer">新窗口</a>
+      </div>
     </section>
     <section class="tool-runner-frame-wrap">
       <iframe
@@ -2158,6 +2204,10 @@ function renderToolRunner() {
         allow="clipboard-read; clipboard-write; fullscreen; microphone; camera; autoplay; gamepad; midi"
         sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-downloads"
       ></iframe>
+      <button class="tool-fullscreen-btn" type="button" data-tool-fullscreen aria-label="全屏">
+        <span class="fs-expand"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg></span>
+        <span class="fs-shrink"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l-3 3M12 4l3 3M4 12l-3-3M12 12l3-3"/></svg></span>
+      </button>
       <div class="tool-runner-tip">
         <strong>${escapeHtml(tip[0])}</strong>
         <span>${escapeHtml(tip[1])}</span>
@@ -2167,6 +2217,9 @@ function renderToolRunner() {
   const frame = $(".tool-runner-frame", root);
   frame?.addEventListener("load", () => {
     root.classList.add("tool-loaded");
+  });
+  $("[data-tool-fullscreen]", root)?.addEventListener("click", () => {
+    document.body.classList.toggle("tool-fullscreen");
   });
 }
 
@@ -2237,18 +2290,27 @@ async function runSearch(keyword) {
   renderHistory();
   navigateLocal("search", { q: value });
   $("[data-search-input]").value = value;
-  const root = $("[data-search-results]");
-  root.replaceChildren(loadingCard(`正在搜索：${value}`, "搜索中"));
+  $("[data-search-tabs]")?.classList.add("hidden");
+  const postsRoot = $("[data-search-results-posts]");
+  const worksRoot = $("[data-search-results-works]");
+  postsRoot.classList.remove("hidden");
+  worksRoot.classList.add("hidden");
+  $$("[data-search-tab]").forEach((t) => t.classList.toggle("active", t.dataset.searchTab === "posts"));
+  postsRoot.replaceChildren(loadingCard(`正在搜索：${value}`, "搜索中"));
+  worksRoot.replaceChildren(loadingCard(`正在搜索：${value}`, "搜索中"));
   try {
     const [postResult, works] = await Promise.all([api.searchPosts(value, 20), searchWorks(value)]);
     const posts = (postResult.items || []).map(normalizePost);
-    const sections = [
-      createSearchSection("帖子", posts.length, posts.map(createPost), "没有找到相关帖子"),
-      createSearchSection("作品", works.length, works.map(createHomeWorkCard), "没有找到相关作品")
-    ];
-    root.replaceChildren(...sections);
+    postsRoot.replaceChildren(
+      ...(posts.length ? posts.map(createPost) : [statusCard("没有找到相关帖子")])
+    );
+    worksRoot.replaceChildren(
+      ...(works.length ? works.map(createHomeWorkCard) : [statusCard("没有找到相关作品")])
+    );
+    $("[data-search-tabs]")?.classList.toggle("hidden", !posts.length && !works.length);
   } catch (error) {
-    root.replaceChildren(errorCard(`搜索失败：${error.message}`, "搜索失败"));
+    postsRoot.replaceChildren(errorCard(`搜索失败：${error.message}`, "搜索失败"));
+    worksRoot.replaceChildren();
   }
 }
 
@@ -3613,12 +3675,17 @@ async function submitLogin(event) {
 
     try {
       loginResult = await api.loginV1(identity, password);
-    } catch {
-      status.textContent = "v1 登录未通过，正在尝试安全登录...";
-      const time = await api.currentTime();
-      const ticketResult = await api.captchaRule(identity, time.data);
-      loginResult = await api.loginV2(identity, password, ticketResult.ticket);
+    } catch (v1Error) {
       method = "password_v2";
+      status.textContent = "v1 登录未通过，正在尝试安全登录...";
+      try {
+        const time = await api.currentTime();
+        const timestamp = time?.data ?? time;
+        const ticketResult = await api.captchaRule(identity, timestamp);
+        loginResult = await api.loginV2(identity, password, ticketResult.ticket);
+      } catch (v2Error) {
+        throw new Error(`安全登录失败：${v2Error.message}`);
+      }
     }
 
     const result = loginResult.data;
@@ -3633,10 +3700,11 @@ async function submitLogin(event) {
       if (window.PickcatAndroid?.clearLogin) window.PickcatAndroid.clearLogin();
     }
     saveSessionToStorage(remember);
+    syncPlayerAuth();
     status.textContent = `登录成功（${method}），正在进入我的页面。`;
     navigateLocal("mine");
   } catch (error) {
-    status.textContent = `登录失败：${error.message}`;
+    status.textContent = `登录失败（${method}）：${error.message}`;
   } finally {
     if (submitButton) {
       submitButton.disabled = false;
@@ -3669,7 +3737,6 @@ function normalizeStaticLabels() {
     tab.textContent = feedLabels[tab.dataset.feedTab] || tab.textContent;
   });
   $("[data-home-tabs]")?.setAttribute("aria-label", "首页分类");
-  $("[data-back]")?.setAttribute("aria-label", "返回");
   $("[data-search]")?.setAttribute("aria-label", "搜索");
 }
 
@@ -3692,7 +3759,12 @@ function bindEvents() {
     });
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeCreateSheet();
+    if (event.key === "Escape") {
+      closeCreateSheet();
+      if (document.body.classList.contains("tool-fullscreen")) {
+        document.body.classList.remove("tool-fullscreen");
+      }
+    }
   });
   document.addEventListener("focusin", (event) => {
     if (isTextEntryTarget(event.target)) setKeyboardOpen(true);
@@ -3705,6 +3777,13 @@ function bindEvents() {
       state.feedTab = tab.dataset.feedTab;
       $$("[data-feed-tab]").forEach((item) => item.classList.toggle("active", item === tab));
       renderFeed();
+    });
+  });
+  $$("[data-search-tab]").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      $$("[data-search-tab]").forEach((item) => item.classList.toggle("active", item === tab));
+      $("[data-search-results-posts]")?.classList.toggle("hidden", tab.dataset.searchTab !== "posts");
+      $("[data-search-results-works]")?.classList.toggle("hidden", tab.dataset.searchTab !== "works");
     });
   });
   const mineTabKeys = ["activity", "works", "circles"];
@@ -3721,9 +3800,6 @@ function bindEvents() {
   });
   $("[data-search]").addEventListener("click", () => navigateLocal("search"));
   $("[data-cancel-search]").addEventListener("click", () => navigateLocal("home"));
-  $("[data-back]").addEventListener("click", () => {
-    nativeBack();
-  });
   $("[data-title]").addEventListener("click", () => {
     if (state.currentView === "home") scrollToPageTop();
   });
@@ -3735,7 +3811,9 @@ function bindEvents() {
   $("[data-clear-search]").addEventListener("click", () => {
     state.history = [];
     renderHistory();
-    $("[data-search-results]").replaceChildren();
+    $("[data-search-results-posts]").replaceChildren();
+    $("[data-search-results-works]").replaceChildren();
+    $("[data-search-tabs]")?.classList.add("hidden");
   });
   $("[data-search-input]").addEventListener("keydown", (event) => {
     if (event.key === "Enter") runSearch(event.currentTarget.value);
@@ -3787,6 +3865,18 @@ async function init() {
   await loadCircleData();
   await loadHomeData();
   syncHomeTopbarVisibility({ force: true });
+  window.matchMedia("(orientation: landscape)").addEventListener("change", (e) => {
+    if (state.currentView !== "work") return;
+    if (e.matches) {
+      const startBtn = $("[data-start-player]");
+      if (startBtn) startBtn.click();
+    } else {
+      if (document.body.classList.contains("player-landscape")) {
+        setNativePlayerMode(false);
+        renderWorkReader();
+      }
+    }
+  });
 }
 
 init();
