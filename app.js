@@ -819,6 +819,10 @@ function setNativePlayerMode(active) {
 }
 
 function nativeBack() {
+  if (document.body.classList.contains("tool-fullscreen")) {
+    document.body.classList.remove("tool-fullscreen");
+    return true;
+  }
   const activePlayer = $("[data-player-stage] iframe");
   if (activePlayer && state.currentView === "work") {
     setNativePlayerMode(false);
@@ -2100,6 +2104,7 @@ function setView(view, options = {}) {
     $(".bottom-nav")?.classList.toggle("hidden", isSecondaryView(view));
     updateTopbar(view);
     if (view !== "work") setNativePlayerMode(false);
+    if (view !== "tool") document.body.classList.remove("tool-fullscreen");
     updateFeedSentinel();
     if (view === "mine") renderMinePage();
     if (view === "message") renderMessagesReadable();
@@ -2197,6 +2202,10 @@ function renderToolRunner() {
         allow="clipboard-read; clipboard-write; fullscreen; microphone; camera; autoplay; gamepad; midi"
         sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-downloads"
       ></iframe>
+      <button class="tool-fullscreen-btn" type="button" data-tool-fullscreen aria-label="全屏">
+        <span class="fs-expand"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg></span>
+        <span class="fs-shrink"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l-3 3M12 4l3 3M4 12l-3-3M12 12l3-3"/></svg></span>
+      </button>
       <div class="tool-runner-tip">
         <strong>${escapeHtml(tip[0])}</strong>
         <span>${escapeHtml(tip[1])}</span>
@@ -2206,6 +2215,9 @@ function renderToolRunner() {
   const frame = $(".tool-runner-frame", root);
   frame?.addEventListener("load", () => {
     root.classList.add("tool-loaded");
+  });
+  $("[data-tool-fullscreen]", root)?.addEventListener("click", () => {
+    document.body.classList.toggle("tool-fullscreen");
   });
 }
 
@@ -3736,7 +3748,12 @@ function bindEvents() {
     });
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeCreateSheet();
+    if (event.key === "Escape") {
+      closeCreateSheet();
+      if (document.body.classList.contains("tool-fullscreen")) {
+        document.body.classList.remove("tool-fullscreen");
+      }
+    }
   });
   document.addEventListener("focusin", (event) => {
     if (isTextEntryTarget(event.target)) setKeyboardOpen(true);

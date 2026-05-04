@@ -2389,6 +2389,96 @@ body.tool-workspace-view .tool-runner-frame {
   min-height: 720px;
 }
 
+.tool-fullscreen-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 30;
+  border: 0;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.tool-fullscreen-btn svg {
+  stroke: #fff;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tool-fullscreen-btn .fs-shrink { display: none; }
+.tool-fullscreen-btn .fs-expand { display: block; }
+
+body.tool-fullscreen {
+  background: #000;
+}
+
+body.tool-fullscreen .topbar,
+body.tool-fullscreen .bottom-nav,
+body.tool-fullscreen .tool-runner-head,
+body.tool-fullscreen .tool-runner-tip {
+  display: none !important;
+}
+
+body.tool-fullscreen .phone-shell {
+  width: 100vw;
+  min-height: var(--viewport-height);
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.tool-fullscreen .app {
+  padding: 0 !important;
+}
+
+body.tool-fullscreen #tool-view {
+  margin: 0;
+  padding: 0;
+}
+
+body.tool-fullscreen .tool-runner {
+  gap: 0;
+  min-height: var(--viewport-height);
+  padding-top: 0;
+}
+
+body.tool-fullscreen .tool-runner-frame-wrap {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: var(--viewport-height);
+  min-height: auto;
+  border: 0;
+  border-radius: 0;
+  background: #000;
+  z-index: 40;
+}
+
+body.tool-fullscreen .tool-runner-frame {
+  height: 100%;
+  min-height: auto;
+}
+
+body.tool-fullscreen .tool-fullscreen-btn {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 50;
+}
+
+body.tool-fullscreen .tool-fullscreen-btn .fs-expand { display: none; }
+body.tool-fullscreen .tool-fullscreen-btn .fs-shrink { display: block; }
+
 .user-reader-hero {
   position: relative;
   display: grid;
