@@ -758,6 +758,7 @@ function editorEntries(work = {}) {
   const meta = engineMeta(work, work.id);
   const partnerEntries = [
     meta.code === "nemo" ? { label: "BetterNemo", tool: "better-nemo", disabled: false } : null,
+    meta.code === "nemo" ? { label: "BN 播放器", url: `https://bn-p.pages.dev/player/?player=${work.id}`, disabled: false } : null,
     meta.code === "kittenN" ? { label: "KN-Oldsquaw", tool: "kn-oldsquaw", disabled: false } : null,
     { label: "CoCo Pro", tool: "coco-pro", disabled: false },
     { label: "控件编辑器", tool: "widget-editor", disabled: false }
