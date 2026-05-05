@@ -2920,6 +2920,53 @@ body.player-landscape .work-fullscreen-btn { display: none; }
   }
 }
 
+.mine-menu-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+}
+
+.mine-menu-sheet .sheet-panel {
+  min-height: auto;
+  max-height: none;
+  overflow-y: visible;
+  padding: 16px 0 calc(30px + env(safe-area-inset-bottom));
+}
+
+.mine-menu-list {
+  display: grid;
+}
+
+.mine-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  padding: 16px 28px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 18px;
+  text-align: left;
+}
+
+.mine-menu-item:active {
+  background: var(--soft);
+}
+
+.mine-menu-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
 .bottom-nav {
   position: fixed;
   left: 50%;

@@ -2174,6 +2174,41 @@ function closeCreateSheet() {
   sheet?.setAttribute("aria-hidden", "true");
 }
 
+function openMineMenu() {
+  const sheet = $("[data-mine-menu-sheet]");
+  sheet?.classList.remove("hidden");
+  sheet?.setAttribute("aria-hidden", "false");
+}
+
+function closeMineMenu() {
+  const sheet = $("[data-mine-menu-sheet]");
+  sheet?.classList.add("hidden");
+  sheet?.setAttribute("aria-hidden", "true");
+}
+
+function handleMineAction(action) {
+  closeMineMenu();
+  switch (action) {
+    case "works":
+      navigateLocal("mine");
+      break;
+    case "favorites":
+      navigateLocal("mine");
+      break;
+    case "pick":
+      navigateLocal("mine");
+      break;
+    case "feedback":
+      window.open("https://github.com/CodeManTeam/Pickcat-Reborn/issues", "_blank", "noreferrer");
+      break;
+    case "settings":
+      break;
+    case "about":
+      $(".mine-footer")?.scrollIntoView({ behavior: "smooth" });
+      break;
+  }
+}
+
 function choosePublishType(type) {
   navigateLocal("publish");
   const labels = type === "video" ? ["视频"] : ["动态", "图文"];
@@ -3772,6 +3807,11 @@ function bindEvents() {
   $$("[data-nav]").forEach((button) => button.addEventListener("click", () => navigateLocal(button.dataset.nav)));
   $("[data-create-open]")?.addEventListener("click", openCreateSheet);
   $$("[data-create-close]").forEach((button) => button.addEventListener("click", closeCreateSheet));
+  $("[data-mine-menu]")?.addEventListener("click", openMineMenu);
+  $$("[data-mine-menu-close]").forEach((button) => button.addEventListener("click", closeMineMenu));
+  $$("[data-mine-action]").forEach((button) => {
+    button.addEventListener("click", () => handleMineAction(button.dataset.mineAction));
+  });
   $$("[data-create-publish]").forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
@@ -3788,6 +3828,7 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeCreateSheet();
+      closeMineMenu();
       if (document.body.classList.contains("tool-fullscreen")) {
         document.body.classList.remove("tool-fullscreen");
       }

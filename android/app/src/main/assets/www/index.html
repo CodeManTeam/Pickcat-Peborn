@@ -75,7 +75,7 @@
         <section class="view" id="mine-view" data-view="mine">
           <div class="mine-hero">
             <img src="public/assets/bg_mine_header.png" alt="" />
-            <button class="icon-btn light" type="button" aria-label="更多">
+            <button class="icon-btn light" type="button" data-mine-menu aria-label="更多">
               <img class="top-action-img menu-img" src="public/assets/pickcat/ic_more_mine_black.png" alt="" />
             </button>
           </div>
@@ -111,6 +111,51 @@
               <p>本项目采用自定义限制许可（禁止商用，修改/分发需保持同条件），详见 LICENSE.md。项目地址：<a href="https://github.com/CodeManTeam/Pickcat-Reborn" target="_blank" rel="noreferrer">github.com/CodeManTeam/Pickcat-Reborn</a></p>
             </section>
           </footer>
+
+          <div class="mine-menu-sheet hidden" data-mine-menu-sheet aria-hidden="true">
+            <button class="sheet-backdrop" type="button" data-mine-menu-close aria-label="关闭菜单"></button>
+            <div class="sheet-panel" role="dialog" aria-label="更多">
+              <div class="sheet-handle"></div>
+              <div class="mine-menu-list">
+                <button class="mine-menu-item" type="button" data-mine-action="works">
+                  <span class="mine-menu-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  </span>
+                  <span>作品管理</span>
+                </button>
+                <button class="mine-menu-item" type="button" data-mine-action="favorites">
+                  <span class="mine-menu-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </span>
+                  <span>我的收藏</span>
+                </button>
+                <button class="mine-menu-item" type="button" data-mine-action="pick">
+                  <span class="mine-menu-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </span>
+                  <span>我的 pick</span>
+                </button>
+                <button class="mine-menu-item" type="button" data-mine-action="feedback">
+                  <span class="mine-menu-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </span>
+                  <span>用户反馈</span>
+                </button>
+                <button class="mine-menu-item" type="button" data-mine-action="settings">
+                  <span class="mine-menu-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                  </span>
+                  <span>设置</span>
+                </button>
+                <button class="mine-menu-item" type="button" data-mine-action="about">
+                  <span class="mine-menu-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </span>
+                  <span>关于我们</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section class="view" id="work-view" data-view="work">
