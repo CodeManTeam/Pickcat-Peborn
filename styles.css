@@ -2925,37 +2925,64 @@ body.player-landscape .work-fullscreen-btn { display: none; }
   inset: 0;
   z-index: 40;
   display: grid;
-  align-items: center;
-  justify-items: right;
+  align-items: end;
+  justify-items: center;
   pointer-events: auto;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0,0,0,0.55);
 }
-
-.menu-panel {
-  position: relative;
-  display: grid;
-  gap: 24px;
-  min-height: calc(var(--viewport-height) - (var(--shell-inset-y) * 2));
-  width: 80vw;
-  border-radius: 16px 16px 0 0;
-  padding: 16px 28px calc(30px + env(safe-area-inset-bottom));
+.more-menu .sheet-panel {
+  min-height: 20vh;
+}
+/* 菜单项样式 */
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px;
+  border-radius: 12px;
   background: #fff;
-  box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.18);
-  animation: menu-in 180ms ease both;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out-soft);
+  text-decoration: none;
+  margin-bottom: 8px;
+  border-bottom: 2px solid #F1F1F1;
 }
 
-@keyframes menu-in {
-  from {
-    transform: translateX(28px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.menu-item:last-child {
+  border-bottom: none;
 }
 
+.menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
+.menu-item:hover {
+  background: var(--soft);
+  transform: translateX(4px);
+}
+
+.menu-item:active {
+  background: none;
+}
+
+.menu-item img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.menu-item span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .bottom-nav {
   position: fixed;
   left: 50%;

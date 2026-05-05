@@ -247,7 +247,7 @@ function applyRuntimeShellMode() {
 }
 
 function isSecondaryView(view = state.currentView) {
-  return ["search", "publish", "detail", "work", "user", "tool", "login"].includes(view);
+  return ["search", "publish", "detail", "work", "user", "tool", "login", "about"].includes(view);
 }
 
 function isTextEntryTarget(target) {
@@ -2070,7 +2070,7 @@ function renderBoardSelect() {
 }
 
 function updateTopbar(view) {
-  const titles = { home: "PICKCAT", circle: "喵圈", publish: "发布", message: "消息", mine: "我的", search: "", detail: "帖子详情", work: "作品阅览", user: "用户预览", tool: toolRegistry[state.activeToolId]?.name || "创作工具", login: "登录" };
+  const titles = { home: "PICKCAT", circle: "喵圈", publish: "发布", message: "消息", mine: "我的", search: "", detail: "帖子详情", work: "作品阅览", user: "用户预览", tool: toolRegistry[state.activeToolId]?.name || "创作工具", login: "登录", about: "关于" };
   const title = $("[data-title]");
   title.innerHTML = view === "home" ? `<img src="${ASSETS.logo}" alt="PICKCAT" />` : titles[view];
   title.classList.toggle("is-scroll-top", view === "home");
@@ -2086,9 +2086,14 @@ $(".more-menu")?.addEventListener("click", e => {
   if (e.target == $(".more-menu"))
     $(".more-menu")?.classList.toggle("hidden", true);
 });
+$$("[data-menu-item]").forEach(item => {
+  item.addEventListener("click", () => {
+    $(".more-menu")?.classList.toggle("hidden", true);
+    navigateLocal(item.dataset.menuItem);
+  });
+})
 function renderTopActions(view) {
   const actions = $(".top-actions");
-  console.log(view);
   switch (view) {
     case "search":
     case "publish":
@@ -2097,6 +2102,7 @@ function renderTopActions(view) {
     case "tool":
     case "login":
     case "user":
+    case "about":
       actions.innerHTML = '';
       break;
     case "mine":
